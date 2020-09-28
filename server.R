@@ -190,7 +190,7 @@ shinyServer(function(input, output, session) {
         dplyr::select(FileID, Start, Stop, Allele, Type, Source)
       
       rhot_2gether <- bind_rows(rhot_x_ss_data,rhot_y_mix_data)
-      
+      browser()
       rhandsontable(rhot_2gether, height = 400, width = 700)
     })
     
@@ -286,27 +286,27 @@ shinyServer(function(input, output, session) {
       session$reload()
     })
     
-    observe({
-      
-      if(input$ID070 == "excl_choice_ID"){
-        foo <- input$text_incl_ID
-        foo1 <- as_tibble(foo)
-        foo2 <- foo1 %>% separate_rows(value,sep = ";")
-        foo1 %>% separate_rows(value,sep = ";") %>% separate(value, into = c("Start","Stop"), convert = T) -> foo3
-        foo3 %>% mutate(len = Stop - Start) -> foo4
-        sequence(foo4$len) + rep(foo4$Start, foo4$len) -> foo5
-        unique(foo5) -> values$foo6
-        #browser()
-      }
-      
-      # shinyjs::toggleState("text_incl_ID",input$incl_excl_ID == "inclusion_ID")
-      # shinyjs::toggleState("text_Excl_ID",input$incl_excl_ID == "exclusion_ID")
-      # if(input$incl_excl_ID == "exclusion_ID"){
-      # updateTextInput(session, "text_incl_ID", value = "")
-      # }else{
-      #   updateTextInput(session, "text_incl_ID", value = "1-16569")
-      # }
-    })
+    # observe({
+    #   
+    #   if(input$ID070 == "excl_choice_ID"){
+    #     foo <- input$text_incl_ID
+    #     foo1 <- as_tibble(foo)
+    #     foo2 <- foo1 %>% separate_rows(value,sep = ";")
+    #     foo1 %>% separate_rows(value,sep = ";") %>% separate(value, into = c("Start","Stop"), convert = T) -> foo3
+    #     foo3 %>% mutate(len = Stop - Start) -> foo4
+    #     sequence(foo4$len) + rep(foo4$Start, foo4$len) -> foo5
+    #     unique(foo5) -> values$foo6
+    #     #browser()
+    #   }
+    #   
+    #   # shinyjs::toggleState("text_incl_ID",input$incl_excl_ID == "inclusion_ID")
+    #   # shinyjs::toggleState("text_Excl_ID",input$incl_excl_ID == "exclusion_ID")
+    #   # if(input$incl_excl_ID == "exclusion_ID"){
+    #   # updateTextInput(session, "text_incl_ID", value = "")
+    #   # }else{
+    #   #   updateTextInput(session, "text_incl_ID", value = "1-16569")
+    #   # }
+    # })
     
     observeEvent(input$getmitogen_ID,{
       output$tmp_get_mitoseq <- rhandsontable::renderRHandsontable({
@@ -343,17 +343,59 @@ shinyServer(function(input, output, session) {
     # })
     
     observeEvent(input$load_MMDIT_ID,{
-      values$mydata_db <- loadMMDIT()
+      values[['mydata_db']] <- loadMMDIT()
       values$mydata_pops <- getPops(values$mydata_db)
       values$mydata_amps <- getAmpCoordinates(values$mydata_db)
-      
+      values$mydata_amps <- values$mydata_amps %>% mutate("Select amps" = rep(FALSE,1))
     })
     
     observe({
+      # TODO is tab 'Select populations' is selected and is.null(db) then alert to load db first. if(is.null())
       if(!is.null(values$mydata_pops)){
         pops <- values$mydata_pops %>% pull()
       updatePickerInput(session, inputId = "myPicker_accor_ID", choices = pops)
       }
     })
+    
+    # There is a bug in rhandsontable in shinymodal: the table is loaded correctly the first time it is called
+    # but the second time it is called in shinymodal it truncates after first column and will only display all
+    # the columns if scrolled on the table or clicked on the table. The following is a workaround to that bug,
+    # where Rhandsontable is forcefully rendered each time modal is called. This is done by indirectly passing
+    # the amplicons generated via the following reactive element.
+     mydata_amps_tmp <- reactive({
+       if(is.null(input$mydata_amps_rhot)){
+         values$mydata_amps
+       } else{
+         hot_to_r(input$mydata_amps_rhot)
+       }
+     })
+     
+     
+    observeEvent(values$mydata_amps,{
+      output$mydata_amps_rhot <- rhandsontable::renderRHandsontable({
+        rhandsontable(mydata_amps_tmp(), width = "100%", height = 200)
+      })
+    })
+    observe({
+      if(input$Id072 == "Choose from Precision ID Kit" & is.null(values[['mydata_db']])){
+        showModal(modalDialog("Precision kitID amplicon table",
+          div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
+        ))
+      }
+      if(input$Id072 == "Choose from Precision ID Kit" & (!is.null(values$mydata_db))){
+        #browser()
+        showModal(modalDialog(
+          title = "Precision kitID amplicon table",
+          #"This is an important message!",
+          rHandsontableOutput("mydata_amps_rhot"),
+          footer = tagList(actionButton("go2", "Continue"),
+                           modalButton("Stop")), easyClose = TRUE
+          # TODO: selectall button, change exit to escape or click anywhere
+          
+          
+        ))
+      }
+    })
+    #})
 
 })

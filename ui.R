@@ -20,6 +20,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(bsplus)
 library(htmltools)
+library(shinyglide)
 
 
 ##################################################################################
@@ -152,29 +153,59 @@ body <- dashboardBody(
                                     bs_accordion(id = "incl_excl_accor_ID") %>%
                                       bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
                                       bs_append(title = "Choose Incl Exc list", 
-                                                content = #div(class = "radioselect_inclExcl",
-                                                            fluidRow(#column(1,
-                                                                     radioGroupButtons(
-                                                                       inputId = "ID070", label = "", choices = c(
-                                                                         "Inclusion" = "incl_choice_ID",
-                                                                         "Exclusion" = "excl_choice_ID"
-                                                                       ), justified = TRUE, checkIcon = list(yes = icon("ok", 
-                                                                                                                        lib = "glyphicon"))
-                                                                     ),
-                                                              #),
-                                                              #column(4,
-                                                                     textInput("text_incl_ID","", value = "") %>% 
-                                                                       bsplus::shinyInput_label_embed(
-                                                                         #icon("info") %>%
-                                                                         shiny::icon("info-circle") %>%
-                                                                           bs_embed_tooltip("Input semicolon separated coordinates (0-based start and 1-based stop). 
-                                                                                            Default is inclusion of whole mitochondrial genome.")
-                                                                       )
-                                                                     #textInput("text_Excl_ID","", value = "")
-                                                                     # bs_button("I'm a button") %>%
-                                                                     #   bs_embed_tooltip(title = "I'm a tooltip")
-                                                              #)
-                                                              )
+                                                content = radioGroupButtons(
+                                                  inputId = "Id072",
+                                                  label = "Label",
+                                                  choices = c("Choose one option to input inclusion / exclusion list",
+                                                                "Choose from Precision ID Kit",
+                                                                "Manually input genomic coordinate intervals",
+                                                                "Upload bed file of regions to include / exclude"),
+                                                  checkIcon = list(
+                                                    yes = tags$i(class = "fa fa-check-square", 
+                                                                 style = "color: steelblue"),
+                                                    no = tags$i(class = "fa fa-square-o", 
+                                                                style = "color: steelblue")),
+                                                  direction = "vertical"
+                                                )
+                                                  
+                                                #   radioGroupButtons(
+                                                #   inputId = "Id071",
+                                                #   label = "",
+                                                #   choices = c("Choose one option to input inclusion / exclusion list",
+                                                #               "Choose from Precision ID Kit", 
+                                                #               "Manually input genomic coordinate intervals", 
+                                                #               "Upload bed file of regions to include / exclude"),
+                                                #   status = "primary",
+                                                #   checkIcon = list(
+                                                #     yes = icon("ok", 
+                                                #                lib = "glyphicon"),
+                                                #     no = icon("remove",
+                                                #               lib = "glyphicon")),
+                                                #   direction = "vertical"
+                                                # )
+                                                  #div(class = "radioselect_inclExcl",
+                                                            # fluidRow(#column(1,
+                                                            #          radioGroupButtons(
+                                                            #            inputId = "ID070", label = "", choices = c(
+                                                            #              "Inclusion" = "incl_choice_ID",
+                                                            #              "Exclusion" = "excl_choice_ID"
+                                                            #            ), justified = TRUE, checkIcon = list(yes = icon("ok", 
+                                                            #                                                             lib = "glyphicon"))
+                                                            #          ),
+                                                            #   #),
+                                                            #   #column(4,
+                                                            #          textInput("text_incl_ID","", value = "") %>% 
+                                                            #            bsplus::shinyInput_label_embed(
+                                                            #              #icon("info") %>%
+                                                            #              shiny::icon("info-circle") %>%
+                                                            #                bs_embed_tooltip("Input semicolon separated coordinates (0-based start and 1-based stop). 
+                                                            #                                 Default is inclusion of whole mitochondrial genome.")
+                                                            #            )
+                                                            #          #textInput("text_Excl_ID","", value = "")
+                                                            #          # bs_button("I'm a button") %>%
+                                                            #          #   bs_embed_tooltip(title = "I'm a tooltip")
+                                                            #   #)
+                                                            #   )
                                                               #)
                                                   
                                                   ) %>%
@@ -190,7 +221,12 @@ body <- dashboardBody(
                                                     `selected-text-format` = "count > 6"
                                                   ), 
                                                   multiple = TRUE
-                                                )),
+                                                ) %>% 
+                                                  bsplus::shinyInput_label_embed(
+                                                    #icon("info") %>%
+                                                    shiny::icon("info-circle") %>%
+                                                      bs_embed_tooltip("Select more than one population. Make sure to load MMDIT database first.")
+                                                  )),
                                     # div(class = "radioselect_inclExcl",
                                     # column(1,
                                     # radioButtons("incl_excl_ID", "Choose", 
@@ -230,7 +266,8 @@ body <- dashboardBody(
                                     #        ))
                                     #        )
 
-                                    ),
+                                    )
+                                    
                                     )
                     
                     
