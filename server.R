@@ -346,7 +346,7 @@ shinyServer(function(input, output, session) {
       values[['mydata_db']] <- loadMMDIT()
       values$mydata_pops <- getPops(values$mydata_db)
       values$mydata_amps <- getAmpCoordinates(values$mydata_db)
-      values$mydata_amps <- values$mydata_amps %>% mutate("Select amps" = rep(FALSE,1))
+      #values$mydata_amps <- values$mydata_amps %>% mutate("Select amps" = rep(FALSE,1))
     })
     
     observe({
@@ -359,43 +359,87 @@ shinyServer(function(input, output, session) {
     
     # There is a bug in rhandsontable in shinymodal: the table is loaded correctly the first time it is called
     # but the second time it is called in shinymodal it truncates after first column and will only display all
-    # the columns if scrolled on the table or clicked on the table. The following is a workaround to that bug,
+    # the columns if scrolled the table or clicked on the table. The following is a workaround to that bug,
     # where Rhandsontable is forcefully rendered each time modal is called. This is done by indirectly passing
     # the amplicons generated via the following reactive element.
      mydata_amps_tmp <- reactive({
-       if(is.null(input$mydata_amps_rhot)){
-         values$mydata_amps
-       } else{
-         hot_to_r(input$mydata_amps_rhot)
+       if(values[['mydata_amps_select']] == 1){
+         values$mydata_amps <- values$mydata_amps %>% mutate("Select amps" = rep(FALSE,1))
+         if(is.null(input$mydata_amps_rhot)){
+           values$mydata_amps
+         } else{
+           hot_to_r(input$mydata_amps_rhot)
+         }
        }
+       if(values[['mydata_amps_select']] == 2){
+         values[['mydata_amps_selected']] <- values$mydata_amps %>% mutate("Select amps" = rep(TRUE,1))
+         if(is.null(input$mydata_amps_rhot_selected)){
+           values[['mydata_amps_selected']]
+         }else{
+           hot_to_r(input$mydata_amps_rhot_selected)
+         }
+       }
+       
+      
+       
      })
      
-     
+    # instead of directly passing values$mydata_amps to renderRHandsontable it is indirectly passed, by bringing in 
+    # reactive element mydata_amps_tmp in between. 
     observeEvent(values$mydata_amps,{
+      if(values[['mydata_amps_select']] == 1){
       output$mydata_amps_rhot <- rhandsontable::renderRHandsontable({
         rhandsontable(mydata_amps_tmp(), width = "100%", height = 200)
       })
+      }
+      if(values[['mydata_amps_select']] == 2){
+      output$mydata_amps_rhot_selected <- rhandsontable::renderRHandsontable({
+        rhandsontable(mydata_amps_tmp(), width = "100%", height = 200)
+      })
+      }
     })
+    
     observe({
       if(input$Id072 == "Choose from Precision ID Kit" & is.null(values[['mydata_db']])){
-        showModal(modalDialog("Precision kitID amplicon table",
+        showModal(modalDialog(title = "Precision kitID amplicon table",
           div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
         ))
       }
       if(input$Id072 == "Choose from Precision ID Kit" & (!is.null(values$mydata_db))){
         #browser()
+        values[['mydata_amps_select']] <- 1
         showModal(modalDialog(
           title = "Precision kitID amplicon table",
           #"This is an important message!",
           rHandsontableOutput("mydata_amps_rhot"),
-          footer = tagList(actionButton("go2", "Continue"),
-                           modalButton("Stop")), easyClose = TRUE
+          footer = tagList(#div(style="display:inline-block;width:32%;float: right;margin: 0px",actionButton("button1", label = "B 1", icon = icon("paper-plane"))),
+            actionButton(inputId = "select_all_ID","Select all"),
+            actionButton("deselct_all_ID", "Deselect all"),
+            actionButton("continue_ID", "Continue"),
+                           modalButton("Stop"),tags$style("#select_all_ID{display:inline-block;float:left; color:red;}
+                                                          #deselct_all_ID{display:inline-block;float:left;color:red;}
+                                                          ") ), easyClose = TRUE
+        
           # TODO: selectall button, change exit to escape or click anywhere
           
           
-        ))
+        )
+        )
       }
+      # if(input$select_all_ID){
+      #   browser()
+      # }
+      
     })
+    
+    observeEvent(input$select_all_ID,{
+      values[['mydata_amps_select']] <- 2
+      showModal(modalDialog(
+        title = "Precision kitID amplicon table",
+        rHandsontableOutput("mydata_amps_rhot_selected")
+      ))
+    })
+    
     #})
 
 })
