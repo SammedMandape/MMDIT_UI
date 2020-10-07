@@ -20,8 +20,9 @@ library(shinyjs)
 library(shinyWidgets)
 library(bsplus)
 library(htmltools)
-library(shinyglide)
+#library(shinyglide)
 
+source("helpers.R") # Load all the code needed to show feedback on a button click
 
 ##################################################################################
 ## sidebar
@@ -143,7 +144,7 @@ body <- dashboardBody(
                            tabPanel("Select Inclusion/Exclusion list",column(2),
                                     column(8, algin="center",
                                     #div(
-                                      actionButton("load_MMDIT_ID","Load MMDIT database", class='btn-info'),
+                                      withBusyIndicatorUI(actionButton("load_MMDIT_ID","Load MMDIT database", class='btn-info')),
                                         # style="margin: 10px; 
                                         # box-sizing: border-box;
                                         # "),
