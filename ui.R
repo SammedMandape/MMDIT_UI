@@ -21,9 +21,13 @@ library(shinyWidgets)
 library(bsplus)
 library(htmltools)
 #library(shinyglide)
+library(DT)
 
 source("helpers.R") # Load all the code needed to show feedback on a button click
 
+tags$head(
+  tags$link(href="mydatastyles.css", rel="stylesheet", type="text/css")
+) 
 ##################################################################################
 ## sidebar
 ##################################################################################
@@ -46,8 +50,11 @@ body <- dashboardBody(
   useShinyjs(),
     tabItems(
         tabItem(tabName = "data_import_ID",
-                fluidRow(
-                    box(title = "File import", width = 12, height = "auto",
+                # fluidRow(
+                #     tags$div(class="divInsteadbox",
+                    wellPanel(class="divInsteadbox",fluidRow(
+                      tags$div(
+                    #box(title = "File import", width = 12, height = "auto",
                         column(width = 6,
                                fileInput("select_ss_data_ID",
                                          label = "Upload one or multiple single source data",
@@ -75,14 +82,15 @@ body <- dashboardBody(
                                verbatimTextOutput("files_selected", placeholder = T),
                                tags$head(tags$style("#files_selected{font-weight:bold;
                                                              overflow-y:scroll;
-                                                             max-height: 500px;
-                                                             color:red;
+                                                             max-height: 200px;
+                                                             color:blue; margin-top:24px;
                                                              white-space: pre-wrap;
                                                   }"))
 
                         )
-                       )
-                ),
+                       ) 
+                )),tags$style(".divInsteadbox{border10px solid black;
+                                     background-color: white;}"),
                 fluidRow(
                   #conditionalPanel(condition = "(input.analyze_data_id + 1) % 2 == 0",
                   box(width = 12, height = 600, 
@@ -95,7 +103,7 @@ body <- dashboardBody(
                     #          #          margin-right:auto;}"))
                     #     )
                     #   ),
-                    tabsetPanel(id = "primary_analysis_ID",
+                    tabsetPanel(id = "primary_analysis_ID", type = "pills",
                     #tabBox(width = 12, id = "primary_analysis_ID",
                            tabPanel("SNP analysis",
                                     # div(style = "display: inline-block;

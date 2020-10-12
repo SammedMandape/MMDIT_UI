@@ -7,17 +7,17 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny)
-library(tidyverse)
-library(magrittr)
-library(shinydashboard)
-library(rhandsontable)
-library(shinythemes)
-#library(shinysky)
-library(shinyjs)
+# library(shiny)
+# library(tidyverse)
+# library(magrittr)
+# library(shinydashboard)
+# library(rhandsontable)
+# library(shinythemes)
+# #library(shinysky)
+# library(shinyjs)
 library(MMDIT)
-library(shinyWidgets)
-library(DT)
+# library(shinyWidgets)
+# library(DT)
 
 source("Ufunctions_updated_08122020.R")
 
@@ -275,7 +275,35 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$done_cont_perc_kitID_id,{
       removeModal()
-      browser()
+      
+      # excluded regions
+      as_tibble(input$text_excl_cont_preIDkit_ID) -> mydata_excl_input_pkid
+      mydata_excl_input_pkid %>%
+        separate_rows(value,sep = ";") %>% 
+        separate(value, into = c("Start","Stop"), convert = T) %>%
+        mutate(len = Stop - Start) -> mydata_excl_input_pkid_1
+      sequence(mydata_excl_input_pkid_1[['len']]) +
+        rep(mydata_excl_input_pkid_1[['Start']],
+            mydata_excl_input_pkid_1[['len']]) -> mydata_excl_input_pkid_2
+      unique(mydata_excl_input_pkid_2) -> values[['mydata_excl_input__pkid_final']]
+      
+      # included regions
+      values$mydata_amps[input$mydata_amps_sel_dtID_rows_selected,] %>%
+        mutate(len = stop - start) -> mydata_incl_input_pkid
+      sequence(mydata_incl_input_pkid[['len']]) +
+        rep(mydata_incl_input_pkid[['start']], 
+            mydata_incl_input_pkid[['len']]) -> mydata_incl_input_pkid_1
+      unique(mydata_incl_input_pkid_1) -> values[['mydata_incl_input_pkid_final']]
+       
+      
+      # getting all exclusions
+      mtDNA <- seq(16569)
+      intersect(values[['mydata_excl_input__pkid_final']], values[['mydata_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_1
+      setdiff(mtDNA, values[['mydata_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_2
+      union(mydata_excl_intersect_pkid_1, mydata_excl_intersect_pkid_2) -> mydata_excl_total_pkid
+      #print(mydata_excl_total_pkid)
+      print(getMitoGenomes(values[['mydata_db']], pop = c("AM"),blk = mydata_excl_total_pkid))
+      
     })
     
     
