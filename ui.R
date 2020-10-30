@@ -50,21 +50,22 @@ body <- dashboardBody(
   useShinyjs(),
     tabItems(
         tabItem(tabName = "data_import_ID",
-                # fluidRow(
+                fluidRow(
                 #     tags$div(class="divInsteadbox",
-                    wellPanel(class="divInsteadbox",fluidRow(
-                      tags$div(
-                    #box(title = "File import", width = 12, height = "auto",
+                    # wellPanel(class="divInsteadbox",fluidRow(
+                    #   tags$div(
+                    box(title = "File import", width = 12, height = "auto",
                         column(width = 6,
                                fileInput("select_ss_data_ID",
-                                         label = "Upload one or multiple single source data",
+                                         label = "Upload zero or more single source data",
                                          multiple = TRUE,
                                          accept = "text/plain"),
                                fileInput("select_mix_data_ID",
                                          #"empop_variant_file_id",
                                          label = "Upload mixture data",
                                          accept = "text/plain"),
-                               fluidRow(actionButton(
+                               #fluidRow 
+                               tags$div(actionButton(
                                    "analyze_data_id", label = "Analyze data",class="btn-info"
                                 ),
                                tags$style("#analyze_data_id{float:right}"),
@@ -89,8 +90,8 @@ body <- dashboardBody(
 
                         )
                        ) 
-                )),tags$style(".divInsteadbox{border10px solid black;
-                                     background-color: white;}"),
+                ),#),tags$style(".divInsteadbox{border10px solid black;
+                  #                   background-color: white;}"),
                 fluidRow(
                   #conditionalPanel(condition = "(input.analyze_data_id + 1) % 2 == 0",
                   box(width = 12, height = 600, 
@@ -103,7 +104,7 @@ body <- dashboardBody(
                     #          #          margin-right:auto;}"))
                     #     )
                     #   ),
-                    tabsetPanel(id = "primary_analysis_ID", type = "pills",
+                    tabsetPanel(id = "primary_analysis_ID",
                     #tabBox(width = 12, id = "primary_analysis_ID",
                            tabPanel("SNP analysis",
                                     # div(style = "display: inline-block;
@@ -235,7 +236,8 @@ body <- dashboardBody(
                                                     #icon("info") %>%
                                                     shiny::icon("info-circle") %>%
                                                       bs_embed_tooltip("Select more than one population. Make sure to load MMDIT database first.")
-                                                  )),
+                                                  ))
+                                    
                                     # div(class = "radioselect_inclExcl",
                                     # column(1,
                                     # radioButtons("incl_excl_ID", "Choose", 
@@ -312,7 +314,13 @@ body <- dashboardBody(
         )
         
     ),
-  use_bs_tooltip()
+  use_bs_tooltip(),
+  tags$script("$(function() {
+                                            $('#incl_excl_accor_ID').on('click', function(x) {
+                                              Shiny.onInputChange('selected_tab_accordi_ID', x.target.innerText)
+                                            });
+                                          });"),
+  HTML("<input id='selected_tab_accordi_ID' type='text' style='display: none;'>")
     
     
 )

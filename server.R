@@ -48,7 +48,7 @@ shinyServer(function(input, output, session) {
     
     x_val_name <- reactive({
       if(is.null(values$x_ss_name)){
-        return(NULL)
+        return() #returns NULL
       }else{
         return(append("\tSingle source data:",values$x_ss_name))
       }
@@ -56,7 +56,7 @@ shinyServer(function(input, output, session) {
     
     y_val_name <- reactive({
       if(is.null(values$y_mix_name)){
-        return(NULL)
+        return() # returns NULL
       }else{
         return(append("\n\tMixture data:",values$y_mix_name))
       }
@@ -106,7 +106,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$empop_variant_input_snp <- rhandsontable::renderRHandsontable({
-      if(is.null(values$y_mix_data) & is.null(values$y_mix_data)){
+      if(is.null(values$y_mix_data) && is.null(values$y_mix_data)){
         return(NULL)
       }
       rhot_x_ss_data <- values$x_ss_data %>% 
@@ -126,7 +126,7 @@ shinyServer(function(input, output, session) {
     
     
     output$empop_variant_input_indel <- rhandsontable::renderRHandsontable({
-      if(is.null(values$y_mix_data) & is.null(values$y_mix_data)){
+      if(is.null(values$y_mix_data) && is.null(values$y_mix_data)){
         return(NULL)
       }
       rhot_x_ss_data_indel <- values$x_ss_data %>%
@@ -192,6 +192,14 @@ shinyServer(function(input, output, session) {
         )
         })
     })
+
+    observe({
+      if((input$selected_tab_accordi_ID == "Select populations") && is.null(values[['mydata_db']])){
+        showModal(modalDialog(title = "Error!",
+                              tags$div(tags$b("Please load database first to populate this field!", style="color:red"))
+                              ))
+      }
+    })
     
     observe({
       # TODO is tab 'Select populations' is selected and is.null(db) then alert to load db first. if(is.null())
@@ -220,15 +228,15 @@ shinyServer(function(input, output, session) {
       },selection = getselect(input$Id081)
       )
     output$mydata_amps_sel_textout_ID <- renderPrint({cat('Selected amplicons (row numbers):\n\n')
-                              input$mydata_amps_sel_dtID_rows_selected})
+                                  input$mydata_amps_sel_dtID_rows_selected})
     
     observe({
-      if(input$Id072 == "Choose from Precision ID Kit" & is.null(values[['mydata_db']])){
-        showModal(modalDialog(title = "Precision kitID amplicon table",
+      if(input$Id072 == "Choose from Precision ID Kit" && is.null(values[['mydata_db']])){
+        showModal(modalDialog(title = "Error!",
                               div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
         ))
       }
-      if(input$Id072 == "Choose from Precision ID Kit" & (!is.null(values$mydata_db))){
+      if(input$Id072 == "Choose from Precision ID Kit" && (!is.null(values$mydata_db))){
         showModal(modalDialog(
           title = "Precision kitID amplicon table (Please select amplicons to include)",
           DT::dataTableOutput("mydata_amps_sel_dtID"), 
@@ -256,7 +264,7 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$cont_precisionID_ID,{
       if(length(input$mydata_amps_sel_dtID_rows_selected) == 0){
-        showModal(modalDialog(
+        showModal(modalDialog(title = "Error!",
           div(tags$b(style="color: red;", "Please select amplicons to include!"))
         ))
       }else{
@@ -277,6 +285,9 @@ shinyServer(function(input, output, session) {
       removeModal()
       
       # excluded regions
+      if(input$text_excl_cont_preIDkit_ID==""){
+        values[['mydata_excl_input__pkid_final']] <- 0
+        }else {
       as_tibble(input$text_excl_cont_preIDkit_ID) -> mydata_excl_input_pkid
       mydata_excl_input_pkid %>%
         separate_rows(value,sep = ";") %>% 
@@ -286,7 +297,8 @@ shinyServer(function(input, output, session) {
         rep(mydata_excl_input_pkid_1[['Start']],
             mydata_excl_input_pkid_1[['len']]) -> mydata_excl_input_pkid_2
       unique(mydata_excl_input_pkid_2) -> values[['mydata_excl_input__pkid_final']]
-      
+      }
+
       # included regions
       values$mydata_amps[input$mydata_amps_sel_dtID_rows_selected,] %>%
         mutate(len = stop - start) -> mydata_incl_input_pkid
