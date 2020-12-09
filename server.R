@@ -19,7 +19,12 @@ library(MMDIT)
 # library(shinyWidgets)
 # library(DT)
 
-source("Ufunctions_updated_08122020.R")
+#options(repos = BiocManager::repositories()) 
+
+#source("Ufunctions_updated_08122020.R")
+source("AllCodes5.R")
+#source("C:/Users/snm0205/Desktop/MMDIT/R/RcppExports.R")
+#Rcpp::sourceCpp("C:/Users/snm0205/Desktop/MMDIT/src/graphline.cpp")
 
 
 shinyServer(function(input, output, session) {
@@ -29,10 +34,10 @@ shinyServer(function(input, output, session) {
       y_mix_name = NULL,
       x_ss_data = NULL,
       y_mix_data = NULL,
-      foo6 = NULL,
       mydata_db = NULL,
       mydata_pops = NULL,
       mydata_amps = NULL
+      
     )
     
     observeEvent(input$select_ss_data_ID,{
@@ -72,54 +77,92 @@ shinyServer(function(input, output, session) {
     observeEvent(input$clear_ID,{
       values$x_ss_name <- NULL
       values$y_mix_name <- NULL
+      values$x_ss_datapath <- NULL
       reset('select_ss_data_ID')
       reset('select_mix_data_ID')
     }
     )
     
     observe({
-      if(is.null(values$x_ss_name) || is.null(values$y_mix_name)){
-        shinyjs::disable("analyze_data_id")
+      #if(is.null(values$x_ss_name) || is.null(values$y_mix_name)){
+      if(is.null(values$y_mix_name)){
+        shinyjs::disable("analyze_data_ID")
       }else{
-        shinyjs::enable("analyze_data_id")
+        shinyjs::enable("analyze_data_ID")
       }
     })
 
-    
-    observeEvent(input$analyze_data_id,{
-    values$x_ss_data <- NULL
-    for (i in 1:length(values$x_ss_datapath)){
-      mydata_ss <- MMDIT::Empop2variant(values$x_ss_datapath[i]) %>% 
+    all_bases <- c("","A","G","T","C","a","g","t","c")
+    observeEvent(input$analyze_data_ID,{
+      values$x_ss_data <- NULL
+      #browser()
+      if(!is.null(values$x_ss_datapath)){
+        ###########################################################################################
+        # Single source samples
+        for (i in 1:length(values$x_ss_datapath)){
+          
+          mydata_variant2snp <- empop2variant(values$x_ss_datapath[i]) %>% 
+            pull(Variant) %>%
+            Variant2snp() %>%
+            mutate(Pos = as.integer(Pos))
+          
+          
+          sample_alleles <- mydata_variant2snp %>% pull(Allele)
+          
+          #browser()
+          if(!all(sample_alleles %in% all_bases)){
+            showModal(modalDialog(title = "Please check!",
+                                  "There is a/ are heteroplasmic site[s] in known /
+                                  proposed contributors' data and will be removed 
+                                  or you can change the input and reload the files." ))
+            mydata_variant2snp <- mydata_variant2snp[(sample_alleles %in% all_bases),]
+          }
+          
+          mydata_ss <- mydata_variant2snp %$%
+              UnfoldSNP(Pos, Allele, Type) %>%
+              dplyr::mutate(FileID = values$x_ss_name[i],
+                            Source = "Single")
+          #browser()
+          values$x_ss_data <- bind_rows(values$x_ss_data,mydata_ss)
+        }
+        }
+      ###########################################################################################
+      # get rcrs
+      #rcrs <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double = FALSE)
+      
+      # strings of knowns
+      #stringsKnowns <- function()
+      
+      
+      
+      mydata_mix_variant2snp <- empop2variant(values$y_mix_datapath) %>% 
           pull(Variant) %>%
-          MMDIT::Variant2snp() %$%
+          variant2snp() %>% 
+          mutate(Pos = as.integer(Pos)) 
+      
+      values$y_mix_data <- mydata_mix_variant2snp %$%
           UnfoldSNP(Pos, Allele, Type) %>%
-          dplyr::mutate(FileID = values$x_ss_name[i],
-                        Source = "Single")
-      values$x_ss_data <- bind_rows(values$x_ss_data,mydata_ss)
-    }
-    
-    values$y_mix_data <- MMDIT::Empop2variant(values$y_mix_datapath) %>% 
-      pull(Variant) %>%
-      MMDIT::Variant2snp() %$%
-      UnfoldSNP(Pos, Allele, Type) %>%
-      dplyr::mutate(FileID = values$y_mix_name, Source = "Mixture")
+          dplyr::mutate(FileID = values$y_mix_name, Source = "Mixture")
     })
     
     output$empop_variant_input_snp <- rhandsontable::renderRHandsontable({
       if(is.null(values$y_mix_data) && is.null(values$y_mix_data)){
         return(NULL)
       }
-      rhot_x_ss_data <- values$x_ss_data %>% 
-        dplyr::filter(Type == "Substitution") %>% 
-        dplyr::mutate(Start = as.integer(Pos-1), Stop=Pos) %>%
-        dplyr::select(FileID, Start, Stop, Allele, Type, Source) 
+      rhot_x_ss_data <- NULL
+      if(!is.null(values$x_ss_data)){
+        rhot_x_ss_data <- values$x_ss_data %>% 
+          dplyr::filter(Type == "Substitution") %>% 
+          dplyr::mutate(Start = as.integer(Pos-1), Stop=Pos) %>%
+          dplyr::select(FileID, Start, Stop, Allele, Type, Source) 
+      }#else(rhot_x_ss_data <- NULL)
       
-      rhot_y_mix_data <- values$y_mix_data %>%
+      values[['rhot_y_mix_data']] <- values$y_mix_data %>%
         dplyr::filter(Type == "Substitution") %>% 
         dplyr::mutate(Start = as.integer(Pos-1), Stop=Pos) %>%
         dplyr::select(FileID, Start, Stop, Allele, Type, Source)
       
-      rhot_2gether <- bind_rows(rhot_x_ss_data,rhot_y_mix_data)
+      rhot_2gether <- bind_rows(rhot_x_ss_data,values[['rhot_y_mix_data']])
       rhandsontable(rhot_2gether, height = 400, width = 700)
     })
     
@@ -129,7 +172,20 @@ shinyServer(function(input, output, session) {
       if(is.null(values$y_mix_data) && is.null(values$y_mix_data)){
         return(NULL)
       }
-      rhot_x_ss_data_indel <- values$x_ss_data %>%
+      rhot_x_ss_data_indel <- NULL
+      if(!is.null(values$x_ss_data)){
+        rhot_x_ss_data_indel <- values$x_ss_data %>%
+          filter(Type=="Insertion"|Type=="Deletion") %>%
+          mutate(Start = ifelse(Type=="Insertion",
+                                Pos,
+                                as.integer(Pos - 1)),
+                 Stop=ifelse(Type=="Insertion",
+                             Pos,
+                             Pos)) %>%
+          select(FileID, Start, Stop, Allele, Type, Source)
+      }#else(rhot_x_ss_data_indel <- NULL)
+      
+      values[['rhot_y_mix_data_indel']] <- values$y_mix_data %>%
         filter(Type=="Insertion"|Type=="Deletion") %>%
         mutate(Start = ifelse(Type=="Insertion",
                               Pos,
@@ -139,42 +195,27 @@ shinyServer(function(input, output, session) {
                            Pos)) %>%
         select(FileID, Start, Stop, Allele, Type, Source)
       
-      rhot_y_mix_data_indel <- values$y_mix_data %>%
-        filter(Type=="Insertion"|Type=="Deletion") %>%
-        mutate(Start = ifelse(Type=="Insertion",
-                              Pos,
-                              as.integer(Pos - 1)),
-               Stop=ifelse(Type=="Insertion",
-                           Pos,
-                           Pos)) %>%
-        select(FileID, Start, Stop, Allele, Type, Source)
+      rhot_2gether_indel <- bind_rows(rhot_x_ss_data_indel, values[['rhot_y_mix_data_indel']])
       
-      rhot_2gether_indel <- bind_rows(rhot_x_ss_data_indel, rhot_y_mix_data_indel)
+      # Looks like rhandsontable has bug and it won't take source if the length of vector is 1,
+      # following is a work around to replicate single element
+      uniqFileID <- distinct(rhot_2gether_indel, FileID) %>% pull()
+      if(length(uniqFileID)==1) uniqFileID <- rep(uniqFileID,2)
       
-      rhandsontable(rhot_2gether_indel, height = 500, width = 700)
-        
+      rhandsontable(rhot_2gether_indel, height = 500, width = 700) %>%
+        rhandsontable::hot_col(col = "FileID", type = "dropdown", source = uniqFileID, 
+                               strict = TRUE)
       
     })
     
     
     observeEvent(input$next_to_indel_analysis_ID, {
-        updateTabItems(session, "primary_analysis_ID", selected = "Indel analysis") 
+      updateTabItems(session, "primary_analysis_ID", selected = "Indel analysis") 
     })
     
     observeEvent(input$start_over_ID,{
       session$reload()
     })
-    
-    
-    # observeEvent(input$getmitogen_ID,{
-    #   output$tmp_get_mitoseq <- rhandsontable::renderRHandsontable({
-    #     foo7 <- values$foo6
-    #     browser()
-    #     db<-loadMMDIT()
-    #     getMitoGenomes(db, pop = c("AF","AM"),blk = foo7) -> get_mit_gen_tab
-    #     rhandsontable(get_mit_gen_tab, height = 400, width = 500)
-    #   })
-    # })
     
     
     observeEvent(input$load_MMDIT_ID,{
@@ -205,7 +246,13 @@ shinyServer(function(input, output, session) {
       # TODO is tab 'Select populations' is selected and is.null(db) then alert to load db first. if(is.null())
       if(!is.null(values$mydata_pops)){
         pops <- values$mydata_pops %>% pull()
-      updatePickerInput(session, inputId = "myPicker_accor_ID", choices = pops)
+        
+        if("AF" %in% pops) pops[pops %in% c("AF")] <- "Africa"
+        if("AM" %in% pops) pops[pops %in% c("AM")] <- "America"
+        if("AS" %in% pops) pops[pops %in% c("AS")] <- "Asia"
+        if("EU" %in% pops) pops[pops %in% c("EU")] <- "Europe"
+        if("OC" %in% pops) pops[pops %in% c("OC")] <- "Oceania"
+      updatePickerInput(session, inputId = "myPicker_accor_ID", choices = pops, selected = pops)
       }
     })
     
@@ -276,17 +323,19 @@ shinyServer(function(input, output, session) {
                                bs_embed_tooltip("0-based start and 1-based stop. For example, 298-300;320-325")
                            )),
         div(verbatimTextOutput("mydata_amps_sel_textout_ID")),
-        footer = tagList(actionButton("done_cont_perc_kitID_id","Done"))
+        footer = modalButton("Done")
+        #footer = tagList(actionButton("done_cont_perc_kitID_id","Done"))
       ))
     }
     })
     
-    observeEvent(input$done_cont_perc_kitID_id,{
-      removeModal()
-      
+    #observeEvent(input$done_cont_perc_kitID_id,{
+    observeEvent(input$done_run_backend_MMDIT_ID,{
+      #removeModal()
+      withBusyIndicatorServer("done_run_backend_MMDIT_ID",{
       # excluded regions
       if(input$text_excl_cont_preIDkit_ID==""){
-        values[['mydata_excl_input__pkid_final']] <- 0
+        values[['data_excl_input_pkid_final']] <- 0
         }else {
       as_tibble(input$text_excl_cont_preIDkit_ID) -> mydata_excl_input_pkid
       mydata_excl_input_pkid %>%
@@ -296,155 +345,229 @@ shinyServer(function(input, output, session) {
       sequence(mydata_excl_input_pkid_1[['len']]) +
         rep(mydata_excl_input_pkid_1[['Start']],
             mydata_excl_input_pkid_1[['len']]) -> mydata_excl_input_pkid_2
-      unique(mydata_excl_input_pkid_2) -> values[['mydata_excl_input__pkid_final']]
+      unique(mydata_excl_input_pkid_2) -> values[['data_excl_input_pkid_final']]
       }
-
+      
+     
       # included regions
       values$mydata_amps[input$mydata_amps_sel_dtID_rows_selected,] %>%
+        unite("temp",start,stop, remove = FALSE, sep = "-") -> mydata_incl_input_pkid_tmp
+      
+      if("16541-16649" %in% mydata_incl_input_pkid_tmp$temp){
+        mydata_incl_input_pkid_tmp %>% # to take care of circular DNA, maybe there 
+          filter(start!="16541" & stop != "16649") %>% # is a better way to do this
+          add_row(start=c(16541,0),stop=c(16569, 80)) -> mydata_incl_input_pkid_tmp 
+        }
+      
+      mydata_incl_input_pkid_tmp %>% 
+        select(-temp) %>%
         mutate(len = stop - start) -> mydata_incl_input_pkid
       sequence(mydata_incl_input_pkid[['len']]) +
         rep(mydata_incl_input_pkid[['start']], 
             mydata_incl_input_pkid[['len']]) -> mydata_incl_input_pkid_1
-      unique(mydata_incl_input_pkid_1) -> values[['mydata_incl_input_pkid_final']]
+      unique(mydata_incl_input_pkid_1) %>% 
+        sort() -> values[['data_incl_input_pkid_final']]
        
       
+      
       # getting all exclusions
-      mtDNA <- seq(16569)
-      intersect(values[['mydata_excl_input__pkid_final']], values[['mydata_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_1
-      setdiff(mtDNA, values[['mydata_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_2
-      union(mydata_excl_intersect_pkid_1, mydata_excl_intersect_pkid_2) -> mydata_excl_total_pkid
-      #print(mydata_excl_total_pkid)
-      print(getMitoGenomes(values[['mydata_db']], pop = c("AM"),blk = mydata_excl_total_pkid))
+      mtDNALen <- getMtgenomeLength(values[['mydata_db']])
+      mtDNA <- seq(mtDNALen)
+      intersect(values[['data_excl_input_pkid_final']], values[['data_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_1
+      setdiff(mtDNA, values[['data_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_2
+      union(mydata_excl_intersect_pkid_1, mydata_excl_intersect_pkid_2) -> values[['data_excl_total_pkid']]
+      #print(data_excl_total_pkid)
+      
+      # taking all the arguments - inclusion / exclusion list, and population 
+      # generating Mitogenomes strings from database used as proxy for 
+      # random mitochondrial sequences.
+      values[['population_selected']] <- input$myPicker_accor_ID
+      if("Africa" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Africa")] <- "AF"
+      if("America" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("America")] <- "AM"
+      if("Asia" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asia")] <- "AS"
+      if("Europe" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Europe")] <- "EU"
+      if("Oceania" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceania")] <- "OC"
+      values[['genomes']] <- getMitoGenomes(values[['mydata_db']], 
+                                pop = values[['population_selected']], 
+                                blk = values[['data_excl_total_pkid']])
+      
+      # get the mito reference genome that will be used in both methods
+      values[['rcrs']] <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
+      
+      print("Done getting mitochondrial genomes from the database")
+      #browser()
+      
+      if(!is.null(values$x_ss_data)){
+        
+        # filter excluded sites from knowns (single source) data by anti-join
+        mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
+        values[['ss_W_sites_excl']] <- anti_join(values$x_ss_data, 
+                                                mydata_excl_final_tib,
+                                                by = "Pos")
+      }
+      
+      
+      })
+    })
+    
+    # observe({
+    # Save user edited rhandsontable for indel mixture data and get
+    # the mixture calls by converting hot to r object and binding
+    observeEvent(input$save_df_ID,{
+      withBusyIndicatorServer("save_df_ID",{
+        Sys.sleep(1)
+        values[['my_mix_data']] <- as_tibble(bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
+                                             filter(Source == "Mixture"),values[['rhot_y_mix_data']]))
+      })
       
     })
     
+    # TODO take hot_to_r the indel table if user doesn't hit save
+      # if(is.null(values[['my_mix_data']])){
+      #   if(hot_to_r(input$empop_variant_input_indel)){
+      #   values[['my_mix_data']] <- bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
+      #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']])
+      #   }
+      # }
+      # })
+    #######################################################################
+    ## Semi-continuous method
+    #######################################################################
+    observeEvent(input$generate_mixture_statistics_ID,{
+      withBusyIndicatorServer("generate_mixture_statistics_ID",{
+      values[['genomes']]$sampleid <- as.character(values[['genomes']]$sampleid)
     
-    
-    # observeEvent(input$Id081,{
-    #   if(input$Id081 == "Select even rows of amplicons"){
-    #     showModal(modalDialog(
-    #       title = "Precision kitID amplicon table (Please select the amplicons to include)",
-    #       DT::dataTableOutput("mydata_amps_sel_dtID"), 
-    #       size = "l", 
-    #       style = "height:500px; overflow-y: scroll;"
-    #     ))
-    #   }
-    # })
+      # Preprocess genome into distinct haplotypes and counts 
+      mygenomes <- MMDIT::preprocessMitoGenomes(values[['genomes']])
+      genomes <- mygenomes[[1]]
+      genCount <- mygenomes[[2]]
+      
+      # # The mito reference genome
+      # rcrs <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
+      
+      #####################################################################################################
+      # TODO if no samples are known the following won't happen - DONE
+      # adding integer event types
+      my_ss_2_hap_final <- c()
+      if(!is.null(values$x_ss_data)){
         
+        my_ss_2_hap_W_sites_excl <- values[['ss_W_sites_excl']] %>% 
+          group_by(FileID) %>% 
+          mutate(evenType = as.integer(case_when(Type == "Substitution" ~ 0, 
+                                                 Type == "Deletion" ~ 1, 
+                                                 Type == "Insertion" ~ 2))) 
+        
+        # function of generating string to be applied / map to each group of knowns
+        my_seqdiffs2seq <- function(x_data, y_key){
+          my_tmp_sd2s <- seqdiffs2seq(values[['rcrs']], x_data$Pos, x_data$evenType, x_data$Allele) %>%
+            as_tibble()
+          return(my_tmp_sd2s)
+          
+        }
+        #browser()
+        # filter excluded sites from knowns data by anti-join
+        # mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
+        # my_ss_2_hap_W_sites_excl <- anti_join(my_ss_2_hap,
+        #                                       mydata_excl_final_tib,
+        #                                       by = "Pos")
+        
+        # calculate seqdiffs2seq for each group, if more than one known present
+        my_ss_2_hap_final <- group_map(my_ss_2_hap_W_sites_excl, my_seqdiffs2seq) %>%
+          unlist()
+      }
+      # #####################################################################################################
+      # # getting the mixture calls processed from empop file
+      # my_mix_data <- bind_rows(values[['rhot_y_mix_data_indel']],values[['rhot_y_mix_data']]) %>%
+      #   mutate(Allele = if_else(Allele == '-', ' ', Allele))
+      # 
+      # # getting the mixture calls by converting hot to r object and binding
+      # my_mix_data <- bind_rows()
+      
+      values[['my_mix_data']] <- values[['my_mix_data']] %>%
+        mutate(Allele = if_else(Allele == '-', ' ', Allele))
+      
+      #browser()
+      
+      # semi-continuous wrapper
+      inter <- semicontinuousWrapper(genomes, 
+                                     genCount, 
+                                     values[['rcrs']],
+                                     values[['my_mix_data']]$Start,
+                                     values[['my_mix_data']]$Stop, 
+                                     values[['my_mix_data']]$Allele,
+                                     knownHaps = my_ss_2_hap_final,
+                                     nInMix = 2)
+      rmneStats <- inter[[1]]
+      lrStats <- inter[[2]]
+      
+      
+        
+      output$mixStat_rmne_rhotOut <- rhandsontable::renderRHandsontable({
+        rhandsontable(rmneStats)
+        
+      })
+      
+      
+        
+      output$mixStat_lr_rhotOut <- rhandsontable::renderRHandsontable({
+        rhandsontable(lrStats)
+        
+      })
+      })
+      
+      })
     
-############################################################################################################################    
-    # # There is a bug in rhandsontable in shinymodal: the table is loaded correctly the first time it is called
-    # # but the second time it is called in shinymodal it truncates after first column and will only display all
-    # # the columns if scrolled the table or clicked on the table. The following is a workaround to that bug,
-    # # where Rhandsontable is forcefully rendered each time modal is called. This is done by indirectly passing
-    # # the amplicons generated via the following reactive element.
-    #  mydata_amps_tmp <- reactive({
-    #    if(is.null(values[['mydata_amps_select']])){
-    #      if(is.null(input$mydata_amps_rhot)){
-    #          values$mydata_amps %>% mutate("Select amps" = rep(TRUE,1))
-    #      } else{
-    #        #values$mydata_amps %>% mutate("Select amps" = rep(FALSE,1))
-    #        # TODO bug: when user continues and if everything is deselected -> user dismisses modal -> 
-    #        # user goes back to that modal everything is deselected by default -> rather it should be
-    #        # selected by default.
-    #        hot_to_r(input$mydata_amps_rhot)
-    #      }
-    #    }else if(values[['mydata_amps_select']] == 2){
-    #       return(values$mydata_amps %>% mutate("Select amps" = rep(FALSE,1)))
-    #    }
-    #  })
-    #  
-    # # instead of directly passing values$mydata_amps to renderRHandsontable it is indirectly passed, by bringing in 
-    # # reactive element mydata_amps_tmp in between. 
-    # observe({#values$mydata_amps,{
-    #   if(is.null(values[['mydata_amps_select']])){
-    #   output$mydata_amps_rhot <- rhandsontable::renderRHandsontable({
-    #     rhandsontable(mydata_amps_tmp(), width = "100%", height = 200)
-    #   })
-    #   }else if(values[['mydata_amps_select']] == 2){
-    #   output$mydata_amps_rhot_selected <- rhandsontable::renderRHandsontable({
-    #     rhandsontable(mydata_amps_tmp(), width = "100%", height = 200)
-    #   })
-    #   }
-    # })
-    # 
-    # # observe({
-    # #   if(input$Id072 == "Choose from Precision ID Kit" & is.null(values[['mydata_db']])){
-    # #     showModal(modalDialog(title = "Precision kitID amplicon table",
-    # #       div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
-    # #     ))
-    # #   }
-    # #   if(input$Id072 == "Choose from Precision ID Kit" & (!is.null(values$mydata_db))){
-    # #     values[['mydata_amps_select']] <- NULL
-    # #     showModal(modalDialog(
-    # #       title = "Precision kitID amplicon table (Please select the amplicons to include)",
-    # #       rHandsontableOutput("mydata_amps_rhot"),
-    # #       footer = tagList(
-    # #         actionButton("deselct_all_ID", "Deselect all"),
-    # #         actionButton("continue_prec_ID_kit_ID", "Continue"),tags$style("#deselct_all_ID{display:inline-block;float:left; color:red;}")
-    # #         ), easyClose = FALSE
-    # #     
-    # #       # TODO: selectall button, change exit to escape or click anywhere
-    # #       
-    # #       
-    # #     )
-    # #     )
-    # #   }
-    # #   
-    # #   if(input$Id072 == "Manually input genomic coordinate intervals" & is.null(values[['mydata_db']])){
-    # #     showModal(modalDialog(
-    # #       title = "Input genomic coordinate intervals in bed format",
-    # #       div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
-    # #     ))
-    # #   }else if(input$Id072 == "Manually input genomic coordinate intervals" & (!is.null(values$mydata_db))){
-    # #     showModal(modalDialog(
-    # #       title = "Input genomic coordinate intervals to include in bed format",
-    # #       textInput("text_incl_manual_ID","", value = "") %>% bsplus::shinyInput_label_embed(
-    # #         shiny::icon("info-circle") %>%
-    # #           bs_embed_tooltip("0-based start and 1-based stop")
-    # #       ),
-    # #       footer = tagList(actionButton("continue_manual_input_ID","Continue"))
-    # #     ))
-    # #   }
-    # #   
-    # # })
-    # 
-    # observeEvent(input$deselct_all_ID,{
-    #   values[['mydata_amps_select']] <- 2
-    #   showModal(modalDialog(
-    #     title = "Precision kitID amplicon table (Please select the amplicons to include)",
-    #     rHandsontableOutput("mydata_amps_rhot_selected"),
-    #     footer = tagList(
-    #       actionButton("continue_prec_ID_kit_ID", "Continue")
-    #                      )
-    #   ))
-    # })
-    # 
-    # 
-    # observeEvent(input$continue_prec_ID_kit_ID,{
-    #   showModal(modalDialog(
-    #     title = "Input semicolon separated genomic coordinates to exclude in bed format",
-    #     textInput("text_excl_cont_preIDkit_ID","", value = "") %>% 
-    #                  bsplus::shinyInput_label_embed(
-    #                    shiny::icon("info-circle") %>%
-    #                      bs_embed_tooltip("0-based start and 1-based stop")
-    #                  ),
-    #     footer = tagList(actionButton("save_modal_ID", "Save"), tags$style("#save_modal_ID{display:inline-block;float:left; color:red;}"),
-    #                      modalButton("Dismiss"))
-    #   ))
-    # })
-    # 
-    # observeEvent(input$continue_manual_input_ID,{
-    #   showModal(modalDialog(
-    #     title = "Input semicolon separated genomic coordinates to exclude in bed format",
-    #     textInput("text_excl_cont_manual_ID","",value = "") %>% 
-    #       bsplus::shinyInput_label_embed(
-    #         shiny::icon("info-circle") %>%
-    #           bs_embed_tooltip("0-based start and 1-based stop")
-    #       )
-    #   ))
-    # })
-############################################################################################################################    
+    #######################################################################
+    ## Continuous method
+    #######################################################################
+    observeEvent(input$select_var_excel_quantition_ID,{
+      values[['altref_file']] <- input$select_var_excel_quantition_ID[['datapath']]
+    })
+    observeEvent(input$genereate_cont_run_deploid,{
+      #browser()
+      # getting user inputs
+      withBusyIndicatorServer("genereate_cont_run_deploid",{
+      user_input_ED = as.integer(input$cont_edit_dist_input_ID)
+      user_input_numMCMC = as.integer(input$cont_numMCMC_input_ID)
+      user_input_panel_size = as.integer(input$cont_panel_size_input_ID)
+      user_input_nInMix = input$cont_numPerson_inMix_input_ID
+      user_input_recombRate = as.numeric(input$cont_recombRate_input_ID)
+      user_input_miscopyingRate = as.numeric(input$cont_miscopying_rate_input_ID)
+      
+      cont_mix_data <- values$y_mix_data %>% select(-c(FileID,Source)) %>% filter(Type == "Substitution")
+      altref <- Empop2AltRef(cont_mix_data, values[['altref_file']])
+      #altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
+      mtGenomes <- getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
+      allDiffs <- getSeqdiffs(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
+      nearN <- getNeNe(mPos = altref$Pos, mAllele = altref$Allele, 
+                    Count = altref$NormalizedCount, IsRef = altref$isRef, 
+                    ref = values[['rcrs']], mtGenomes = mtGenomes, 
+                    db = values[['mydata_db']], ED = user_input_ED, l = values[['data_excl_total_pkid']])
+      nn<-nearN
+      nn<-nn[1:user_input_panel_size] # reduce panel size while testing
+      if(length(nn)<15)  {
+        stop("It's a no go cowboy, try decreasing the edit distance or choose another sample")
+      } 
+      allDiffs[allDiffs$sampleid%in%nn,]%>%dplyr::select(-event)->longdf
+      
+      dEploid.run<-rundEploid(l=values[['data_excl_total_pkid']], mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef, 
+                              SampleID = longdf$sampleid, rPos = longdf$position, rAllele =longdf$basecall, NumMCMC=user_input_numMCMC, exportPostProb =TRUE, 
+                              recomb= user_input_recombRate, k= user_input_nInMix )
+      MixProp<-getMixProps(dEploid.run) %>%
+        as_tibble_col(column_name = "MixProp")
+      
+      output$cont_deploid_mixProp_rhotOut <- rhandsontable::renderRHandsontable({
+        rhandsontable(MixProp)
+      })
+      
+      Haps<-getdEploidHaps(dEploid.run, mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef)
+      output$cont_deploid_estimatedHap_rhotOut <- rhandsontable::renderRHandsontable({
+        rhandsontable(Haps, height = 500, width = 300)
+      })
+      print(user_input_numMCMC)
+      print(user_input_panel_size)
+      })
+    })
     
 
 })

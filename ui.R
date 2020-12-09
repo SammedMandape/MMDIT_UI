@@ -20,7 +20,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(bsplus)
 library(htmltools)
-#library(shinyglide)
+library(shinyglide)
 library(DT)
 
 source("helpers.R") # Load all the code needed to show feedback on a button click
@@ -54,10 +54,10 @@ body <- dashboardBody(
                 #     tags$div(class="divInsteadbox",
                     # wellPanel(class="divInsteadbox",fluidRow(
                     #   tags$div(
-                    box(title = "File import", width = 12, height = "auto",
+                    box(title = tags$b("File Import"), width = 12, height = "auto",
                         column(width = 6,
                                fileInput("select_ss_data_ID",
-                                         label = "Upload zero or more single source data",
+                                         label = "Upload one or more single source data",
                                          multiple = TRUE,
                                          accept = "text/plain"),
                                fileInput("select_mix_data_ID",
@@ -66,9 +66,9 @@ body <- dashboardBody(
                                          accept = "text/plain"),
                                #fluidRow 
                                tags$div(actionButton(
-                                   "analyze_data_id", label = "Analyze data",class="btn-info"
+                                   "analyze_data_ID", label = "Analyze data",class="btn-info"
                                 ),
-                               tags$style("#analyze_data_id{float:right}"),
+                               tags$style("#analyze_data_ID{float:right}"),
                                actionButton("clear_ID", label = "Clear selection",class="btn-info"),
                                tags$style("#clear_ID{float:left;width:auto}")
                                #<button type="button">Button</button>
@@ -129,7 +129,9 @@ body <- dashboardBody(
                                     ),
                            tabPanel("Indel analysis",
                                     # div(style = "display: inline-block; margin: 10px; border: 10px Solid black;",
-                                    actionButton(inputId = "save_df_ID", label = "Save", class="btn-info"),#),
+                                    withBusyIndicatorUI(
+                                      actionButton(inputId = "save_df_ID", label = "Save", class="btn-info")
+                                      ),#),
                                     tags$style("#save_df_ID{
                                       margin:10px;
                                       box-sizing:border-box;
@@ -153,19 +155,30 @@ body <- dashboardBody(
                            tabPanel("Select Inclusion/Exclusion list",column(2),
                                     column(8, algin="center",
                                     #div(
-                                      withBusyIndicatorUI(actionButton("load_MMDIT_ID","Load MMDIT database", class='btn-info')),
-                                        # style="margin: 10px; 
-                                        # box-sizing: border-box;
-                                        # "),
-                                    tags$style("#load_MMDIT_ID{margin: 10px; 
-                                        box-sizing: border-box;
-                                    }"),
+                                    fluidRow(style = "margin-right: -10px;
+                                             margin-left: -10px;",
+                                      div(style = "float:left;
+                                      margin: 10px; 
+                                      box-sizing: border-box;",
+                                          withBusyIndicatorUI(actionButton(
+                                                            "load_MMDIT_ID",
+                                                            "Load MMDIT database",
+                                                            class='btn-info'))
+                                          ),
+                                      div(style = "float:right;
+                                      margin: 10px;
+                                      box-sizing: border-box;",
+                                          withBusyIndicatorUI(actionButton("done_run_backend_MMDIT_ID",
+                                                     "Generate genome strings", class="btn-info"))
+                                      ),
+                                    ),
                                     bs_accordion(id = "incl_excl_accor_ID") %>%
                                       bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
                                       bs_append(title = "Choose Incl Exc list", 
-                                                content = radioGroupButtons(
+                                                content = div(style = "text-align: left;",
+                                                radioGroupButtons(
                                                   inputId = "Id072",
-                                                  label = "Label",
+                                                  label = "",
                                                   choices = c("Choose one option to input inclusion / exclusion list",
                                                                 "Choose from Precision ID Kit",
                                                                 "Manually input genomic coordinate intervals",
@@ -175,49 +188,9 @@ body <- dashboardBody(
                                                                  style = "color: steelblue"),
                                                     no = tags$i(class = "fa fa-square-o", 
                                                                 style = "color: steelblue")),
-                                                  direction = "vertical"
-                                                )
-                                                  
-                                                #   radioGroupButtons(
-                                                #   inputId = "Id071",
-                                                #   label = "",
-                                                #   choices = c("Choose one option to input inclusion / exclusion list",
-                                                #               "Choose from Precision ID Kit", 
-                                                #               "Manually input genomic coordinate intervals", 
-                                                #               "Upload bed file of regions to include / exclude"),
-                                                #   status = "primary",
-                                                #   checkIcon = list(
-                                                #     yes = icon("ok", 
-                                                #                lib = "glyphicon"),
-                                                #     no = icon("remove",
-                                                #               lib = "glyphicon")),
-                                                #   direction = "vertical"
-                                                # )
-                                                  #div(class = "radioselect_inclExcl",
-                                                            # fluidRow(#column(1,
-                                                            #          radioGroupButtons(
-                                                            #            inputId = "ID070", label = "", choices = c(
-                                                            #              "Inclusion" = "incl_choice_ID",
-                                                            #              "Exclusion" = "excl_choice_ID"
-                                                            #            ), justified = TRUE, checkIcon = list(yes = icon("ok", 
-                                                            #                                                             lib = "glyphicon"))
-                                                            #          ),
-                                                            #   #),
-                                                            #   #column(4,
-                                                            #          textInput("text_incl_ID","", value = "") %>% 
-                                                            #            bsplus::shinyInput_label_embed(
-                                                            #              #icon("info") %>%
-                                                            #              shiny::icon("info-circle") %>%
-                                                            #                bs_embed_tooltip("Input semicolon separated coordinates (0-based start and 1-based stop). 
-                                                            #                                 Default is inclusion of whole mitochondrial genome.")
-                                                            #            )
-                                                            #          #textInput("text_Excl_ID","", value = "")
-                                                            #          # bs_button("I'm a button") %>%
-                                                            #          #   bs_embed_tooltip(title = "I'm a tooltip")
-                                                            #   #)
-                                                            #   )
-                                                              #)
-                                                  
+                                                  direction = "vertical",
+                                                  justified = TRUE
+                                                ))
                                                   ) %>%
                                       bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
                                       bs_append(title= "Select populations",
@@ -235,70 +208,47 @@ body <- dashboardBody(
                                                   bsplus::shinyInput_label_embed(
                                                     #icon("info") %>%
                                                     shiny::icon("info-circle") %>%
-                                                      bs_embed_tooltip("Select more than one population. Make sure to load MMDIT database first.")
+                                                      bs_embed_tooltip("Select more than one
+                                                                       population. Make sure 
+                                                                       to load MMDIT database 
+                                                                       first. Default is all 
+                                                                       populations selected.")
                                                   ))
-                                    
-                                    # div(class = "radioselect_inclExcl",
-                                    # column(1,
-                                    # radioButtons("incl_excl_ID", "Choose", 
-                                    #              choices = c(
-                                    #                          "Inclusion" = "inclusion_ID",
-                                    #                          "Exclusion" = "exclusion_ID"),selected = NULL)
-                                    # )),
-                                    # column(2, textInput("text_incl_ID","", value = "1-16569") %>% 
-                                    #          bsplus::shinyInput_label_embed(
-                                    #            #icon("info") %>%
-                                    #              shiny::icon("info-circle") %>%
-                                    #              bs_embed_tooltip("Input semicolon separated coordinates (0-based start and 1-based stop)")
-                                    #          ),
-                                    #        textInput("text_Excl_ID","", value = "")
-                                    #        # bs_button("I'm a button") %>%
-                                    #        #   bs_embed_tooltip(title = "I'm a tooltip")
-                                    #        ),
-                                    # tags$style(".radioselect_inclExcl{
-                                    #            font-weight: bold;
-                                    #            line-height: 2.0;
-                                    #            margin: 10px;
-                                    #            }"),
-                                    # column(3,
-                                    #        bs_accordion(id = "select_population_acco_ID") %>%
-                                    #          bs_set_opts(panel_type = "success", use_heading_link = TRUE) %>%
-                                    #          bs_append(title= "Select populations",
-                                    #                    content = pickerInput(
-                                    #          inputId = "myPicker", 
-                                    #          label = "Select/deselect all + format selected", 
-                                    #          choices = LETTERS, 
-                                    #          options = list(
-                                    #            `actions-box` = TRUE, 
-                                    #            size = 4,
-                                    #            `selected-text-format` = "count > 4"
-                                    #          ), 
-                                    #          multiple = TRUE
-                                    #        ))
-                                    #        )
-
                                     )
-                                    
-                                    )
-                    
-                    
-                           #tabPanel("")
-
+                                    )#,
+                    # tabPanel("Testing shiny slige",
+                    #          fluidPage(id = "glideTest",
+                    #           # tags$style("#glideTest{
+                    #           #            background-color: #007BA7;
+                    #           # }"),  
+                    #          # fluidRow(column(6,align="center",
+                    #           glide(
+                    #            screen(
+                    #              p("This is a very simple shinyglide application."),
+                    #              p("Please click on Next to go to the next screen.")
+                    #            ),
+                    #            screen(
+                    #              p("Please choose a value."),
+                    #              numericInput("n", "n", value = 10, min = 10)
+                    #            ),
+                    #            screen(
+                    #              p("And here is the result.")#,
+                    #              #plotOutput("plot")
+                    #            )
+                    #          ))#))
+                    #          )
                     )
                 )
-                #)
                 )
                 ),
         tabItem(tabName = "semi-continuous_analysis_method_ID",
                 fluidRow(
-                  box(title = "Semi-continuous analysis", width = 12, height = "auto",
+                  box(title = tags$b("Semi-continuous Analysis"), width = 12, height = "auto",
                     column(
                     selectInput(
-                      "select_mixture_type_id",
+                      "select_mixture_type_ID",
                       label = "Mixture type",
-                      choices = c('Single source', '2-person mixture (2-knowns)', '2-person mixture (2-unknowns)',
-                                  '2-person mixture (1-known, 1-unknown)','3-person mixture (3-unknowns)',
-                                  '3-person mixture (1-known, 2-unknown)','3-person mixture (2-known, 1-unknown)'
+                      choices = c('Single source', '2-persons mixture', '3-persons mixture' 
                       )
                     ),
                     width = 6
@@ -306,12 +256,74 @@ body <- dashboardBody(
                   column(width = 6,
                          selectInput("select_files_SC_ID", "Choose input files",c(Choose=''),multiple = TRUE, selectize = TRUE)
                     
+                  ),
+                  withBusyIndicatorUI(actionButton("generate_mixture_statistics_ID", "Generate Mixture Statistics",class="btn-info"))
                   )
-                  )
+                ),
+                fluidRow(
+                  box(title = tags$b("RESULTS"), width = 12, height = "auto",
+                      div(
+                        tags$b("RMNE Statistics"),
+                        rHandsontableOutput("mixStat_rmne_rhotOut")
+                      ),
+                      tags$br(),
+                      div(
+                        tags$b("LR Statistics"),
+                        rHandsontableOutput("mixStat_lr_rhotOut")
+                      )
+                      
+                      )
                 )
                 
           
-        )
+        ),
+        tabItem(tabName = "continuous_analysis_method_ID",
+                fluidRow(
+                  box(title = tags$b("Continuous Analysis"), width = 12, height = "auto",
+                      fluidRow(#style = "display: block;",
+                        column(width = 6,
+                              fileInput("select_var_excel_quantition_ID",
+                               label = "Upload excel file with quantitative data",
+                               accept = ".xlsx"
+                               ))),
+                      fluidRow(
+                        #style = "display: block;", 
+                        column(width = 3,
+                               textInput("cont_edit_dist_input_ID", "Enter edit distance to be used", value = 4)),
+                        column(width = 3,
+                               textInput("cont_numMCMC_input_ID","Enter the number of MCMC steps to be used", value = 800)),
+                        column(width = 3, # TODO add litte info icon to mention about what happens if less than 15
+                               textInput("cont_panel_size_input_ID", "Enter panel size", value = 25)),
+                        column(width = 3,
+                               numericInput("cont_numPerson_inMix_input_ID","Enter the number of persons in mixture",value = 2, min = 1,max = 5)),
+                        ),
+                      fluidRow(
+                        column(width = 3,
+                               textInput("cont_recombRate_input_ID","Recombination rate", value = 0.0)),
+                        column(width = 3,
+                               textInput("cont_miscopying_rate_input_ID","Miscopying rate", value = 0.01))
+                      ),
+                      withBusyIndicatorUI(actionButton("genereate_cont_run_deploid", label = "Run dEploid",class="btn-info")),
+                      tags$style("#genereate_cont_run_deploid{float:left;width:auto}")
+                      )
+                ),
+                fluidRow(
+                  box(title = tags$b("RESULTS"), width = 12, height = "auto",
+                      div(
+                        tags$b("Proportion of Mixtures"),
+                        rHandsontableOutput("cont_deploid_mixProp_rhotOut")
+                      ),
+                      tags$br(),
+                      div(
+                        tags$b("Estimated Haplotypes"),
+                        rHandsontableOutput("cont_deploid_estimatedHap_rhotOut")
+                        )
+
+                      
+                  )
+                )
+                
+                )
         
     ),
   use_bs_tooltip(),
