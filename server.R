@@ -209,6 +209,27 @@ shinyServer(function(input, output, session) {
     })
     
     
+    # observe({
+    # Save user edited rhandsontable for indel mixture data and get
+    # the mixture calls by converting hot to r object and binding
+    observeEvent(input$save_df_ID,{
+      withBusyIndicatorServer("save_df_ID",{
+        Sys.sleep(1)
+        values[['my_mix_data']] <- as_tibble(bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
+                                                         filter(Source == "Mixture"),values[['rhot_y_mix_data']]))
+      })
+      
+    })
+    
+    # TODO take hot_to_r the indel table if user doesn't hit save
+    # if(is.null(values[['my_mix_data']])){
+    #   if(hot_to_r(input$empop_variant_input_indel)){
+    #   values[['my_mix_data']] <- bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
+    #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']])
+    #   }
+    # }
+    # })
+    
     observeEvent(input$next_to_indel_analysis_ID, {
       updateTabItems(session, "primary_analysis_ID", selected = "Indel analysis") 
     })
@@ -333,6 +354,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$done_run_backend_MMDIT_ID,{
       #removeModal()
       withBusyIndicatorServer("done_run_backend_MMDIT_ID",{
+        
       # excluded regions
       if(input$text_excl_cont_preIDkit_ID==""){
         values[['data_excl_input_pkid_final']] <- 0
@@ -355,7 +377,7 @@ shinyServer(function(input, output, session) {
       
       if("16541-16649" %in% mydata_incl_input_pkid_tmp$temp){
         mydata_incl_input_pkid_tmp %>% # to take care of circular DNA, maybe there 
-          filter(start!="16541" & stop != "16649") %>% # is a better way to do this
+          filter(start!="16541" & stop != "16649") %>% # is a better way to do this?
           add_row(start=c(16541,0),stop=c(16569, 80)) -> mydata_incl_input_pkid_tmp 
         }
       
@@ -387,132 +409,186 @@ shinyServer(function(input, output, session) {
       if("Asia" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asia")] <- "AS"
       if("Europe" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Europe")] <- "EU"
       if("Oceania" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceania")] <- "OC"
-      values[['genomes']] <- getMitoGenomes(values[['mydata_db']], 
-                                pop = values[['population_selected']], 
-                                blk = values[['data_excl_total_pkid']])
-      
+      # values[['genomes']] <- getMitoGenomes(values[['mydata_db']], 
+      #                           pop = values[['population_selected']], 
+      #                           blk = values[['data_excl_total_pkid']])
+      # 
       # get the mito reference genome that will be used in both methods
       values[['rcrs']] <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
       
       print("Done getting mitochondrial genomes from the database")
       #browser()
       
+      mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
+      
+      # filter excluded sites from knowns (single source) data by anti-join
       if(!is.null(values$x_ss_data)){
         
-        # filter excluded sites from knowns (single source) data by anti-join
-        mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
         values[['ss_W_sites_excl']] <- anti_join(values$x_ss_data, 
                                                 mydata_excl_final_tib,
                                                 by = "Pos")
       }
       
+      #browser()
+      # exclude sites from mixture data (snps OR substitution)
+      values[['my_mix_data_snps']] <- values[['my_mix_data']] %>% 
+        filter(Type=="Substitution") %>% 
+        mutate(Pos = Stop) %>% 
+        anti_join(mydata_excl_final_tib, by="Pos") %>% select(-Pos)
+      
+      # **exclude sites from mixture data (insertion). This is only for insertions
+      # defined for at a single positions, if there are insertions with a range
+      # in positions this will not work**
+      values[['my_mix_data_ins']] <- values[['my_mix_data']] %>% filter(Type=="Insertion") %>% mutate(Pos=Stop) %>%
+        anti_join(mydata_excl_final_tib, by="Pos") %>% select(-Pos)
+      
+      # exclude sites from mixture data (deletions).
+      my_mix_data_del_temp <- values[['my_mix_data']] %>% filter(Type=="Deletion") %>% mutate(len=Stop-Start)
+      
+      #browser()
+      if(nrow(my_mix_data_del_temp %>% filter(len > 1))){
+        # range means more than one pos for the event (eg: deletion in range 524-528)
+        # filter to only include len > 1 and check if any pos in the deletion range is in
+        # the excluded sites, if yes then the modal shows up, 
+        # else the anti-join is done after removing the range of pos and 
+        # adding back the events' range of pos
+        my_mix_data_del_temp_1 <- my_mix_data_del_temp %>% filter(len > 1) 
+        sequence(my_mix_data_del_temp_1[['len']]) + rep(my_mix_data_del_temp_1[['Start']],my_mix_data_del_temp_1[['len']]) -> my_mix_data_del_temp_2
+        if(nrow(mydata_excl_final_tib[mydata_excl_final_tib$Pos %in% my_mix_data_del_temp_2,])){
+          showModal(modalDialog(title = "Warning!",
+                                div(tags$b(style="color: red;", "The excluded positions are in the range defined under 'Indel analysis' tab. 
+                              Please either modify the deletion range or modify the inclusion / exclusion list.
+                                         "))
+          ))
+        }else{
+          values[['my_mix_data_del']] <- my_mix_data_del_temp %>% filter(Type=="Deletion") %>% filter(len==1) %>% mutate(Pos=Stop) %>%
+            anti_join(mydata_excl_final_tib, by="Pos") %>% bind_rows(my_mix_data_del_temp %>% filter(Type=="Deletion") %>% filter(len!=1)) %>%
+            select(-c(len, Pos))
+        }
+        
+      }else{
+        values[['my_mix_data_del']] <- my_mix_data_del_temp %>% mutate(Pos=Stop) %>%
+          anti_join(mydata_excl_final_tib, by="Pos") %>% select(-c(len, Pos))
+        
+      }
+      
+      # combine subs, ins, del of mixture data after excluding sites
+      values[['my_mix_data_final']] <- bind_rows(values[['my_mix_data_snps']], 
+                                                 values[['my_mix_data_ins']], 
+                                                 values[['my_mix_data_del']] ) %>%
+                                      mutate(Allele = if_else(Allele == '-', ' ', Allele))
       
       })
     })
     
-    # observe({
-    # Save user edited rhandsontable for indel mixture data and get
-    # the mixture calls by converting hot to r object and binding
-    observeEvent(input$save_df_ID,{
-      withBusyIndicatorServer("save_df_ID",{
-        Sys.sleep(1)
-        values[['my_mix_data']] <- as_tibble(bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
-                                             filter(Source == "Mixture"),values[['rhot_y_mix_data']]))
-      })
-      
-    })
-    
-    # TODO take hot_to_r the indel table if user doesn't hit save
-      # if(is.null(values[['my_mix_data']])){
-      #   if(hot_to_r(input$empop_variant_input_indel)){
-      #   values[['my_mix_data']] <- bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
-      #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']])
-      #   }
-      # }
-      # })
+    # # observe({
+    # # Save user edited rhandsontable for indel mixture data and get
+    # # the mixture calls by converting hot to r object and binding
+    # observeEvent(input$save_df_ID,{
+    #   withBusyIndicatorServer("save_df_ID",{
+    #     Sys.sleep(1)
+    #     values[['my_mix_data']] <- as_tibble(bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
+    #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']]))
+    #   })
+    #   
+    # })
+    # 
+    # # TODO take hot_to_r the indel table if user doesn't hit save
+    #   # if(is.null(values[['my_mix_data']])){
+    #   #   if(hot_to_r(input$empop_variant_input_indel)){
+    #   #   values[['my_mix_data']] <- bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
+    #   #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']])
+    #   #   }
+    #   # }
+    #   # })
     #######################################################################
     ## Semi-continuous method
     #######################################################################
     observeEvent(input$generate_mixture_statistics_ID,{
       withBusyIndicatorServer("generate_mixture_statistics_ID",{
-      values[['genomes']]$sampleid <- as.character(values[['genomes']]$sampleid)
-    
-      # Preprocess genome into distinct haplotypes and counts 
-      mygenomes <- MMDIT::preprocessMitoGenomes(values[['genomes']])
-      genomes <- mygenomes[[1]]
-      genCount <- mygenomes[[2]]
-      
-      # # The mito reference genome
-      # rcrs <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
-      
-      #####################################################################################################
-      # TODO if no samples are known the following won't happen - DONE
-      # adding integer event types
-      my_ss_2_hap_final <- c()
-      if(!is.null(values$x_ss_data)){
-        
-        my_ss_2_hap_W_sites_excl <- values[['ss_W_sites_excl']] %>% 
-          group_by(FileID) %>% 
-          mutate(evenType = as.integer(case_when(Type == "Substitution" ~ 0, 
-                                                 Type == "Deletion" ~ 1, 
-                                                 Type == "Insertion" ~ 2))) 
-        
-        # function of generating string to be applied / map to each group of knowns
-        my_seqdiffs2seq <- function(x_data, y_key){
-          my_tmp_sd2s <- seqdiffs2seq(values[['rcrs']], x_data$Pos, x_data$evenType, x_data$Allele) %>%
-            as_tibble()
-          return(my_tmp_sd2s)
-          
-        }
         #browser()
-        # filter excluded sites from knowns data by anti-join
-        # mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
-        # my_ss_2_hap_W_sites_excl <- anti_join(my_ss_2_hap,
-        #                                       mydata_excl_final_tib,
-        #                                       by = "Pos")
+        genomes_semiCont <- getMitoGenomes(values[['mydata_db']], 
+                                                pop = values[['population_selected']], 
+                                                blk = values[['data_excl_total_pkid']],
+                                           ignoreIndels = FALSE)
+        genomes_semiCont$sampleid <- as.character(genomes_semiCont$sampleid)
+      
+        # Preprocess genome into distinct haplotypes and counts 
+        mygenomes <- MMDIT::preprocessMitoGenomes(genomes_semiCont)
+        genomes <- mygenomes[[1]]
+        genCount <- mygenomes[[2]]
         
-        # calculate seqdiffs2seq for each group, if more than one known present
-        my_ss_2_hap_final <- group_map(my_ss_2_hap_W_sites_excl, my_seqdiffs2seq) %>%
-          unlist()
-      }
-      # #####################################################################################################
-      # # getting the mixture calls processed from empop file
-      # my_mix_data <- bind_rows(values[['rhot_y_mix_data_indel']],values[['rhot_y_mix_data']]) %>%
-      #   mutate(Allele = if_else(Allele == '-', ' ', Allele))
-      # 
-      # # getting the mixture calls by converting hot to r object and binding
-      # my_mix_data <- bind_rows()
-      
-      values[['my_mix_data']] <- values[['my_mix_data']] %>%
-        mutate(Allele = if_else(Allele == '-', ' ', Allele))
-      
-      #browser()
-      
-      # semi-continuous wrapper
-      inter <- semicontinuousWrapper(genomes, 
-                                     genCount, 
-                                     values[['rcrs']],
-                                     values[['my_mix_data']]$Start,
-                                     values[['my_mix_data']]$Stop, 
-                                     values[['my_mix_data']]$Allele,
-                                     knownHaps = my_ss_2_hap_final,
-                                     nInMix = 2)
-      rmneStats <- inter[[1]]
-      lrStats <- inter[[2]]
-      
-      
+        # # The mito reference genome
+        # rcrs <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
         
-      output$mixStat_rmne_rhotOut <- rhandsontable::renderRHandsontable({
-        rhandsontable(rmneStats)
+        #####################################################################################################
+        # TODO if no samples are known the following won't happen - DONE
+        # adding integer event types
+        my_ss_2_hap_final <- c()
+        if(!is.null(values$x_ss_data)){
+          
+          my_ss_2_hap_W_sites_excl <- values[['ss_W_sites_excl']] %>% 
+            group_by(FileID) %>% 
+            mutate(evenType = as.integer(case_when(Type == "Substitution" ~ 0, 
+                                                   Type == "Deletion" ~ 1, 
+                                                   Type == "Insertion" ~ 2))) 
+          
+          # function of generating string to be applied / map to each group of knowns
+          my_seqdiffs2seq <- function(x_data, y_key){
+            my_tmp_sd2s <- seqdiffs2seq(values[['rcrs']], x_data$Pos, x_data$evenType, x_data$Allele) %>%
+              as_tibble()
+            return(my_tmp_sd2s)
+            
+          }
+          #browser()
+          # filter excluded sites from knowns data by anti-join
+          # mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
+          # my_ss_2_hap_W_sites_excl <- anti_join(my_ss_2_hap,
+          #                                       mydata_excl_final_tib,
+          #                                       by = "Pos")
+          
+          # calculate seqdiffs2seq for each group, if more than one known present
+          my_ss_2_hap_final <- group_map(my_ss_2_hap_W_sites_excl, my_seqdiffs2seq) %>%
+            unlist()
+        }
+        # #####################################################################################################
+        # # getting the mixture calls processed from empop file
+        # my_mix_data <- bind_rows(values[['rhot_y_mix_data_indel']],values[['rhot_y_mix_data']]) %>%
+        #   mutate(Allele = if_else(Allele == '-', ' ', Allele))
+        # 
+        # # getting the mixture calls by converting hot to r object and binding
+        # my_mix_data <- bind_rows()
         
-      })
-      
-      
+        # values[['my_mix_data']] <- values[['my_mix_data']] %>%
+        #   mutate(Allele = if_else(Allele == '-', ' ', Allele))
         
-      output$mixStat_lr_rhotOut <- rhandsontable::renderRHandsontable({
-        rhandsontable(lrStats)
+        #browser()
         
-      })
+        # semi-continuous wrapper
+        inter <- semicontinuousWrapper(genomes, 
+                                       genCount, 
+                                       values[['rcrs']],
+                                       values[['my_mix_data_final']]$Start,
+                                       values[['my_mix_data_final']]$Stop, 
+                                       values[['my_mix_data_final']]$Allele,
+                                       knownHaps = my_ss_2_hap_final,
+                                       nInMix = 2)
+        rmneStats <- inter[[1]]
+        lrStats <- inter[[2]]
+        
+        
+          
+        output$mixStat_rmne_rhotOut <- rhandsontable::renderRHandsontable({
+          rhandsontable(rmneStats)
+          
+        })
+        
+        
+          
+        output$mixStat_lr_rhotOut <- rhandsontable::renderRHandsontable({
+          rhandsontable(lrStats)
+          
+        })
       })
       
       })
@@ -534,14 +610,17 @@ shinyServer(function(input, output, session) {
       user_input_recombRate = as.numeric(input$cont_recombRate_input_ID)
       user_input_miscopyingRate = as.numeric(input$cont_miscopying_rate_input_ID)
       
-      cont_mix_data <- values$y_mix_data %>% select(-c(FileID,Source)) %>% filter(Type == "Substitution")
+      #browser()
+      
+      cont_mix_data <- values[['my_mix_data_final']] %>% select(-c(FileID,Source)) %>% filter(Type == "Substitution") %>%
+        mutate(Pos=Stop)
       altref <- Empop2AltRef(cont_mix_data, values[['altref_file']])
       #altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
-      mtGenomes <- getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
+      mtGenomes_cont <- getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       allDiffs <- getSeqdiffs(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       nearN <- getNeNe(mPos = altref$Pos, mAllele = altref$Allele, 
                     Count = altref$NormalizedCount, IsRef = altref$isRef, 
-                    ref = values[['rcrs']], mtGenomes = mtGenomes, 
+                    ref = values[['rcrs']], mtGenomes = mtGenomes_cont, 
                     db = values[['mydata_db']], ED = user_input_ED, l = values[['data_excl_total_pkid']])
       nn<-nearN
       nn<-nn[1:user_input_panel_size] # reduce panel size while testing
@@ -553,6 +632,7 @@ shinyServer(function(input, output, session) {
       dEploid.run<-rundEploid(l=values[['data_excl_total_pkid']], mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef, 
                               SampleID = longdf$sampleid, rPos = longdf$position, rAllele =longdf$basecall, NumMCMC=user_input_numMCMC, exportPostProb =TRUE, 
                               recomb= user_input_recombRate, k= user_input_nInMix )
+      #run function to get mixture proportions from runDeploid object
       MixProp<-getMixProps(dEploid.run) %>%
         as_tibble_col(column_name = "MixProp")
       
@@ -560,9 +640,10 @@ shinyServer(function(input, output, session) {
         rhandsontable(MixProp)
       })
       
+      #run function to get estimated haplotypes from runDeploid object
       Haps<-getdEploidHaps(dEploid.run, mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef)
       output$cont_deploid_estimatedHap_rhotOut <- rhandsontable::renderRHandsontable({
-        rhandsontable(Haps, height = 500, width = 300)
+        rhandsontable(Haps %>% mutate(Pos=as.integer(Pos)), height = 500, width = 300)
       })
       print(user_input_numMCMC)
       print(user_input_panel_size)
