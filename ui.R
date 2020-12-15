@@ -169,7 +169,7 @@ body <- dashboardBody(
                                       margin: 10px;
                                       box-sizing: border-box;",
                                           withBusyIndicatorUI(actionButton("done_run_backend_MMDIT_ID",
-                                                     "Generate genome strings", class="btn-info"))
+                                                     "Finalize list", class="btn-info"))
                                       ),
                                     ),
                                     bs_accordion(id = "incl_excl_accor_ID") %>%

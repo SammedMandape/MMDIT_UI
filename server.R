@@ -268,11 +268,11 @@ shinyServer(function(input, output, session) {
       if(!is.null(values$mydata_pops)){
         pops <- values$mydata_pops %>% pull()
         
-        if("AF" %in% pops) pops[pops %in% c("AF")] <- "Africa"
-        if("AM" %in% pops) pops[pops %in% c("AM")] <- "America"
-        if("AS" %in% pops) pops[pops %in% c("AS")] <- "Asia"
-        if("EU" %in% pops) pops[pops %in% c("EU")] <- "Europe"
-        if("OC" %in% pops) pops[pops %in% c("OC")] <- "Oceania"
+        if("AF" %in% pops) pops[pops %in% c("AF")] <- "African"
+        if("AM" %in% pops) pops[pops %in% c("AM")] <- "American"
+        if("AS" %in% pops) pops[pops %in% c("AS")] <- "Asian"
+        if("EU" %in% pops) pops[pops %in% c("EU")] <- "European"
+        if("OC" %in% pops) pops[pops %in% c("OC")] <- "Oceanian"
       updatePickerInput(session, inputId = "myPicker_accor_ID", choices = pops, selected = pops)
       }
     })
@@ -615,7 +615,10 @@ shinyServer(function(input, output, session) {
       cont_mix_data <- values[['my_mix_data_final']] %>% select(-c(FileID,Source)) %>% filter(Type == "Substitution") %>%
         mutate(Pos=Stop)
       altref <- Empop2AltRef(cont_mix_data, values[['altref_file']])
-      #altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
+      #browser()
+      if(values$y_mix_name == "TheRealEMPOP_07908-034.txt"){
+        altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
+      }
       mtGenomes_cont <- getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       allDiffs <- getSeqdiffs(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       nearN <- getNeNe(mPos = altref$Pos, mAllele = altref$Allele, 
