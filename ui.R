@@ -181,7 +181,7 @@ body <- dashboardBody(
                                                   label = "",
                                                   choices = c("Choose one option to input inclusion / exclusion list",
                                                                 "Choose from Precision ID Kit",
-                                                                "Manually input genomic coordinate intervals",
+                                                                #"Manually input genomic coordinate intervals",
                                                                 "Upload bed file of regions to include / exclude"),
                                                   checkIcon = list(
                                                     yes = tags$i(class = "fa fa-check-square", 
@@ -247,7 +247,7 @@ body <- dashboardBody(
                     column(
                     selectInput(
                       "select_mixture_type_ID",
-                      label = "Mixture type",
+                      label = "mtDNA source type",
                       choices = c('Single source', '2-persons mixture', '3-persons mixture' 
                       )
                     ),
@@ -303,7 +303,7 @@ body <- dashboardBody(
                         column(width = 3,
                                textInput("cont_miscopying_rate_input_ID","Miscopying rate", value = 0.01))
                       ),
-                      withBusyIndicatorUI(actionButton("genereate_cont_run_deploid", label = "Run dEploid",class="btn-info")),
+                      withBusyIndicatorUI(actionButton("genereate_cont_run_deploid", label = "Run DEploid",class="btn-info")),
                       tags$style("#genereate_cont_run_deploid{float:left;width:auto}")
                       )
                 ),

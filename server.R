@@ -596,6 +596,10 @@ shinyServer(function(input, output, session) {
     #######################################################################
     ## Continuous method
     #######################################################################
+    observe({
+      if(is.null(input$select_var_excel_quantition_ID)) shinyjs::disable("genereate_cont_run_deploid") else shinyjs::enable("genereate_cont_run_deploid")
+    })
+    
     observeEvent(input$select_var_excel_quantition_ID,{
       values[['altref_file']] <- input$select_var_excel_quantition_ID[['datapath']]
     })
