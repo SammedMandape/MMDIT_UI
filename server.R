@@ -404,11 +404,11 @@ shinyServer(function(input, output, session) {
       # generating Mitogenomes strings from database used as proxy for 
       # random mitochondrial sequences.
       values[['population_selected']] <- input$myPicker_accor_ID
-      if("Africa" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Africa")] <- "AF"
-      if("America" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("America")] <- "AM"
-      if("Asia" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asia")] <- "AS"
-      if("Europe" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Europe")] <- "EU"
-      if("Oceania" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceania")] <- "OC"
+      if("African" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("African")] <- "AF"
+      if("American" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("American")] <- "AM"
+      if("Asian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asian")] <- "AS"
+      if("European" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("European")] <- "EU"
+      if("Oceanian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceanian")] <- "OC"
       # values[['genomes']] <- getMitoGenomes(values[['mydata_db']], 
       #                           pop = values[['population_selected']], 
       #                           blk = values[['data_excl_total_pkid']])
@@ -446,7 +446,8 @@ shinyServer(function(input, output, session) {
       my_mix_data_del_temp <- values[['my_mix_data']] %>% filter(Type=="Deletion") %>% mutate(len=Stop-Start)
       
       #browser()
-      if(nrow(my_mix_data_del_temp %>% filter(len > 1))){
+      # if loop is to check if there is a range defined for deletions
+      if(nrow(my_mix_data_del_temp %>% filter(len > 1)) > 0){
         # range means more than one pos for the event (eg: deletion in range 524-528)
         # filter to only include len > 1 and check if any pos in the deletion range is in
         # the excluded sites, if yes then the modal shows up, 
@@ -604,7 +605,7 @@ shinyServer(function(input, output, session) {
       values[['altref_file']] <- input$select_var_excel_quantition_ID[['datapath']]
     })
     observeEvent(input$genereate_cont_run_deploid,{
-      #browser()
+      browser()
       # getting user inputs
       withBusyIndicatorServer("genereate_cont_run_deploid",{
       user_input_ED = as.integer(input$cont_edit_dist_input_ID)
@@ -623,7 +624,7 @@ shinyServer(function(input, output, session) {
       if(values$y_mix_name == "TheRealEMPOP_07908-034.txt"){
         altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
       }
-      mtGenomes_cont <- getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
+      mtGenomes_cont <- MMDIT::getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       allDiffs <- getSeqdiffs(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       nearN <- getNeNe(mPos = altref$Pos, mAllele = altref$Allele, 
                     Count = altref$NormalizedCount, IsRef = altref$isRef, 
@@ -639,6 +640,37 @@ shinyServer(function(input, output, session) {
       dEploid.run<-rundEploid(l=values[['data_excl_total_pkid']], mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef, 
                               SampleID = longdf$sampleid, rPos = longdf$position, rAllele =longdf$basecall, NumMCMC=user_input_numMCMC, exportPostProb =TRUE, 
                               recomb= user_input_recombRate, k= user_input_nInMix )
+      
+      
+      #TODO: trace plot and getting hamming distance
+      plot.llk <- function (dEploid.run, title = "", cex.lab = 1, cex.main = 1, cex.axis = 1 ){
+        llk = dEploid.run$llks
+        llkEvent = dEploid.run$llksStates
+        llk_sd = sd(llk)
+        llk_range = range(llk)
+        plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="LLK", main=title,
+             cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
+        updateSingleAt = which(llkEvent == 1)
+        updateBothAt = which(llkEvent == 2)
+        updatePropAt = which(llkEvent == 0)
+        index = c(1:length(llk))
+        points(index[updateSingleAt], llk[updateSingleAt], cex = 0.6, col="red")
+        points(index[updateBothAt], llk[updateBothAt], cex = 0.6, col="blue")
+        points(index[updatePropAt], llk[updatePropAt], cex = 0.6, col="green")
+      }
+      
+      plot.llk(dEploid.run)
+      dEploid.run
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       #run function to get mixture proportions from runDeploid object
       MixProp<-getMixProps(dEploid.run) %>%
         as_tibble_col(column_name = "MixProp")
