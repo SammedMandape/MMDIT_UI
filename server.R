@@ -64,10 +64,6 @@ shinyServer(function(input, output, session) {
     
     output$samplepdf <- renderUI({tags$iframe(style = "height: 800px; width: 100%; scrolling=yes", src = "sample.pdf")})
     
-    # tags$iframe(style="height:400px; width:100%; scrolling=yes", 
-    #             src="sample.pdf")
-    
-    
     
     #############################################################################
     
@@ -122,7 +118,8 @@ shinyServer(function(input, output, session) {
         shinyjs::enable("analyze_data_ID")
       }
     })
-
+    
+    # Checking for heteroplasmy
     all_bases <- c("","A","G","T","C","a","g","t","c")
     
     observeEvent(input$analyze_data_ID,{
@@ -181,7 +178,7 @@ shinyServer(function(input, output, session) {
           dplyr::filter(Type == "Substitution") %>% 
           dplyr::mutate(Start = as.integer(Pos-1), Stop=Pos) %>%
           dplyr::select(FileID, Start, Stop, Allele, Type, Source) 
-      }#else(rhot_x_ss_data <- NULL)
+      }
       
       values[['rhot_y_mix_data']] <- values$y_mix_data %>%
         dplyr::filter(Type == "Substitution") %>% 
@@ -209,7 +206,7 @@ shinyServer(function(input, output, session) {
                              Pos,
                              Pos)) %>%
           select(FileID, Start, Stop, Allele, Type, Source)
-      }#else(rhot_x_ss_data_indel <- NULL)
+      }
       
       values[['rhot_y_mix_data_indel']] <- values$y_mix_data %>%
         filter(Type=="Insertion"|Type=="Deletion") %>%
@@ -235,7 +232,6 @@ shinyServer(function(input, output, session) {
     })
     
     
-    # observe({
     # Save user edited rhandsontable for indel mixture data and get
     # the mixture calls by converting hot to r object and binding
     observeEvent(input$save_df_ID,{
@@ -247,14 +243,6 @@ shinyServer(function(input, output, session) {
       
     })
     
-    # TODO take hot_to_r the indel table if user doesn't hit save
-    # if(is.null(values[['my_mix_data']])){
-    #   if(hot_to_r(input$empop_variant_input_indel)){
-    #   values[['my_mix_data']] <- bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
-    #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']])
-    #   }
-    # }
-    # })
     
     observeEvent(input$next_to_indel_analysis_ID, {
       updateTabItems(session, "primary_analysis_ID", selected = "Indel analysis") 
@@ -281,16 +269,8 @@ shinyServer(function(input, output, session) {
         })
     })
 
-    # observe({
-    #   if((input$selected_tab_accordi_ID == "Select populations") && is.null(values[['mydata_db']])){
-    #     showModal(modalDialog(title = "Error!",
-    #                           tags$div(tags$b("Please load database first to populate this field!", style="color:red"))
-    #                           ))
-    #   }
-    # })
     
     observe({
-      # TODO is tab 'Select populations' is selected and is.null(db) then alert to load db first. if(is.null())
       if(!is.null(values$mydata_pops)){
         pops <- values$mydata_pops %>% pull()
         
@@ -371,16 +351,12 @@ shinyServer(function(input, output, session) {
                            )),
         div(verbatimTextOutput("mydata_amps_sel_textout_ID")),
         footer = modalButton("Done")
-        #footer = tagList(actionButton("done_cont_perc_kitID_id","Done"))
       ))
     }
     })
     
-    #shinyjs::disable("done_run_backend_MMDIT_ID")
     
-    #observeEvent(input$done_cont_perc_kitID_id,{
     observeEvent(input$done_run_backend_MMDIT_ID,{
-      #removeModal()
       withBusyIndicatorServer("done_run_backend_MMDIT_ID",{
         
       # excluded regions
@@ -426,14 +402,11 @@ shinyServer(function(input, output, session) {
       intersect(values[['data_excl_input_pkid_final']], values[['data_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_1
       setdiff(mtDNA, values[['data_incl_input_pkid_final']]) -> mydata_excl_intersect_pkid_2
       union(mydata_excl_intersect_pkid_1, mydata_excl_intersect_pkid_2) -> values[['data_excl_total_pkid']]
-      #print(data_excl_total_pkid)
       
       # taking all the arguments - inclusion / exclusion list, and population 
       # generating Mitogenomes strings from database used as proxy for 
       # random mitochondrial sequences.
-      #browser()
       if(length(input$myPicker_accor_ID) >= 2){
-        #shinyjs::enable("done_run_backend_MMDIT_ID")
         values[['population_selected']] <- input$myPicker_accor_ID
         if("African" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("African")] <- "AF"
         if("American" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("American")] <- "AM"
@@ -449,21 +422,11 @@ shinyServer(function(input, output, session) {
           
         ))
       }
-      # values[['population_selected']] <- input$myPicker_accor_ID
-      # if("African" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("African")] <- "AF"
-      # if("American" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("American")] <- "AM"
-      # if("Asian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asian")] <- "AS"
-      # if("European" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("European")] <- "EU"
-      # if("Oceanian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceanian")] <- "OC"
-      # values[['genomes']] <- getMitoGenomes(values[['mydata_db']], 
-      #                           pop = values[['population_selected']], 
-      #                           blk = values[['data_excl_total_pkid']])
-      # 
+
       # get the mito reference genome that will be used in both methods
       values[['rcrs']] <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
       
       print("Done getting mitochondrial genomes from the database")
-      #browser()
       
       # converting the final list of exclusion to tibble that is used to remove sites
       # from input data
@@ -477,7 +440,6 @@ shinyServer(function(input, output, session) {
                                                 by = "Pos")
       }
       
-      #browser()
       # exclude sites from mixture data (snps OR substitution)
       values[['my_mix_data_snps']] <- values[['my_mix_data']] %>% 
         filter(Type=="Substitution") %>% 
@@ -493,7 +455,6 @@ shinyServer(function(input, output, session) {
       # exclude sites from mixture data (deletions).
       my_mix_data_del_temp <- values[['my_mix_data']] %>% filter(Type=="Deletion") %>% mutate(len=Stop-Start)
       
-      #browser()
       # if loop is to check if there is a range defined for deletions
       if(nrow(my_mix_data_del_temp %>% filter(len > 1)) > 0){
         # range means more than one pos for the event (eg: deletion in range 524-528)
@@ -529,29 +490,8 @@ shinyServer(function(input, output, session) {
       
       })
       
-      # browser()
     })
     
-    # # observe({
-    # # Save user edited rhandsontable for indel mixture data and get
-    # # the mixture calls by converting hot to r object and binding
-    # observeEvent(input$save_df_ID,{
-    #   withBusyIndicatorServer("save_df_ID",{
-    #     Sys.sleep(1)
-    #     values[['my_mix_data']] <- as_tibble(bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
-    #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']]))
-    #   })
-    #   
-    # })
-    # 
-    # # TODO take hot_to_r the indel table if user doesn't hit save
-    #   # if(is.null(values[['my_mix_data']])){
-    #   #   if(hot_to_r(input$empop_variant_input_indel)){
-    #   #   values[['my_mix_data']] <- bind_rows(hot_to_r(input$empop_variant_input_indel) %>%
-    #   #                                          filter(Source == "Mixture"),values[['rhot_y_mix_data']])
-    #   #   }
-    #   # }
-    #   # })
     #######################################################################
     ## Estimation of Match Statistics
     #######################################################################
@@ -582,7 +522,6 @@ shinyServer(function(input, output, session) {
         
         
         #####################################################################################################
-        # TODO if no samples are known the following won't happen - DONE
         # adding integer event types
         values[['my_ss_2_hap_final']] <- c()
         if(!is.null(values$x_ss_data)){
@@ -599,7 +538,6 @@ shinyServer(function(input, output, session) {
             unlist()
         }
         
-        #browser()
         
         nInMix_val <- case_when(input$select_mixture_type_ID == "2-persons mixture" ~ 2,
                   input$select_mixture_type_ID == "3-persons mixture" ~ 3)
@@ -645,6 +583,7 @@ shinyServer(function(input, output, session) {
       values[['altref_file']] <- input$select_var_excel_quantition_ID[['datapath']]
     })
     
+    
     # Trace plot function showing convergence of MCMC steps
     plot.llk <- function (dEploid.run, title = "", cex.lab = 1, cex.main = 1, cex.axis = 1 ){
       llk = dEploid.run$llks
@@ -652,10 +591,10 @@ shinyServer(function(input, output, session) {
       llk_sd = sd(llk)
       llk_range = range(llk)
       windowsFonts(A = windowsFont("Times New Roman"))
-      #plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
-      #     cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
       plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
-           cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis, family="A", ylim=c(-2725,-2695) )
+          cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
+      # plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
+      #      cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis, family="A", ylim=c(-2725,-2695) )
       updateSingleAt = which(llkEvent == 1)
       updateBothAt = which(llkEvent == 2)
       updatePropAt = which(llkEvent == 0)
@@ -667,7 +606,6 @@ shinyServer(function(input, output, session) {
     
     
     observeEvent(input$genereate_cont_run_deploid,{
-      #browser()
       # getting user inputs
       withBusyIndicatorServer("genereate_cont_run_deploid",{
       user_input_ED = as.integer(input$cont_edit_dist_input_ID)
@@ -678,7 +616,6 @@ shinyServer(function(input, output, session) {
       user_input_recombRate = as.numeric(input$cont_recombRate_input_ID)
       user_input_miscopyingRate = as.numeric(input$cont_miscopying_rate_input_ID)
       
-      #browser()
       
       # check if panel size is atleast 15
       if(user_input_panel_size <15){
@@ -691,10 +628,10 @@ shinyServer(function(input, output, session) {
       cont_mix_data <- values[['my_mix_data_final']] %>% select(-c(FileID,Source)) %>% filter(Type == "Substitution") %>%
         mutate(Pos=Stop)
       altref <- Empop2AltRef(cont_mix_data, values[['altref_file']], normVal = user_input_readCntNorm)
-      #browser()
       if(values$y_mix_name == "TheRealEMPOP_07908-034.txt" || values$y_mix_name == "TheRealEMPOP_025-07908.txt"){
         altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
       }
+      
       mtGenomes_cont <- MMDIT::getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], 
                                               blk = values[['data_excl_total_pkid']],
                                               ignoreIndels = TRUE)
@@ -710,17 +647,16 @@ shinyServer(function(input, output, session) {
       } 
       allDiffs[allDiffs$sampleid%in%nn,]%>%dplyr::select(-event)->longdf
       
-      #browser()
-      user_input_numMCMC=100
+      #######################################################################
+      # TODO - Give user ability to choose seed
       #set.seed(5) # all odd amplicons for 07908_034
-      set.seed(3)
+      #set.seed(3)
+      #######################################################################
+      
       dEploid.run<-rundEploid(l=values[['data_excl_total_pkid']], mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef, 
                               SampleID = longdf$sampleid, rPos = longdf$position, rAllele =longdf$basecall, NumMCMC=user_input_numMCMC, exportPostProb =TRUE, 
                               recomb= user_input_recombRate, k= user_input_nInMix )
       
-      plot.llk(dEploid.run)
-      
-      #TODO: trace plot (done) and getting hamming distance
       
       # Trace plot
       output$cont_tace_plot_ID <- renderPlot(
@@ -735,7 +671,6 @@ shinyServer(function(input, output, session) {
         rhandsontable(MixProp)
       })
       
-      #print("getdeploid")
       #run function to get estimated haplotypes from runDeploid object
       Haps<-getdEploidHaps(dEploid.run, mPos = altref$Pos, 
                            mAllele = altref$Allele, 
@@ -751,39 +686,38 @@ shinyServer(function(input, output, session) {
       
       
       ########################################################################
-      ##get hamming distance
+      ##get hamming distance - only for internal use
       ########################################################################
-      v1<-Empop2variant("C:\\Users\\snm0205\\Desktop\\UI_mitomix\\test_files\\RealData\\047_empop.txt")
-      v2<-Empop2variant("C:\\Users\\snm0205\\Desktop\\UI_mitomix\\test_files\\RealData\\025_empop.txt")
-      s1<-Variant2snp(v1$Variant)
-      s2<-Variant2snp(v2$Variant)
-      u1<-UnfoldSNP(s1$Pos, s1$Allele,s1$Type)%>%mutate(SampleID=1)%>%filter(Type!="Insertion" & Type!="Deletion")
-      u2<-UnfoldSNP(s2$Pos, s2$Allele,s2$Type)%>%mutate(SampleID=2)%>%filter(Type!="Insertion" & Type!="Deletion")
-      Truehaps<-bind_rows(u1, u2)%>%dplyr::select(SampleID , Pos)#
-      dplyr::filter(Truehaps, !Truehaps$Pos%in%dEploid.run$ExSites)->Truehaps1#remove sites that violate the infinite sites model
-      tSampleID<-Truehaps1$SampleID
-      tPos<-Truehaps1$Pos
-      HammingDist <- getHapDis(dSampleID = Haps$Samples,  dPos = Haps$Pos, tSampleID, tPos)
+      # v1<-Empop2variant("047_empop.txt")
+      # v2<-Empop2variant("025_empop.txt")
+      # s1<-Variant2snp(v1$Variant)
+      # s2<-Variant2snp(v2$Variant)
+      # u1<-UnfoldSNP(s1$Pos, s1$Allele,s1$Type)%>%mutate(SampleID=1)%>%filter(Type!="Insertion" & Type!="Deletion")
+      # u2<-UnfoldSNP(s2$Pos, s2$Allele,s2$Type)%>%mutate(SampleID=2)%>%filter(Type!="Insertion" & Type!="Deletion")
+      # Truehaps<-bind_rows(u1, u2)%>%dplyr::select(SampleID , Pos)#
+      # dplyr::filter(Truehaps, !Truehaps$Pos%in%dEploid.run$ExSites)->Truehaps1#remove sites that violate the infinite sites model
+      # tSampleID<-Truehaps1$SampleID
+      # tPos<-Truehaps1$Pos
+      # HammingDist <- getHapDis(dSampleID = Haps$Samples,  dPos = Haps$Pos, tSampleID, tPos)
       
       
       ##################
       # RMP calculation
       ##################
       # update sites to be excluded
-      #print("exxluded sites")
       deploid_exSites <- dEploid.run[['ExSites']]
       updated_total_exSites <- unique(c(deploid_exSites, values[['data_excl_total_pkid']]))
       updated_total_exSites_tib <- as_tibble_col(updated_total_exSites, column_name = "Pos")
-      #print("done getting excluded sites")
+      
       # exclude all the sites from estimated haplotypes from deploid
       estHap_W_sites_excl <- anti_join(Haps, updated_total_exSites_tib, by="Pos")
-      #print("done antijoin")
+      
       # generate vector of strings from haplotypes
       estHap_W_sites_excl_final <- estHap_W_sites_excl %>% 
         group_by(Samples) %>% 
         mutate(evenType = 0, Allele = Nuc) %>%
         select(-c(Nuc))
-      #print("done getting final excl sites")
+
       estHap_final <- group_map(estHap_W_sites_excl_final, my_seqdiffs2seq) %>%
         unlist()
     
