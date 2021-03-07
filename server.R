@@ -7,24 +7,15 @@
 #    http://shiny.rstudio.com/
 #
 
-# library(shiny)
-# library(tidyverse)
-# library(magrittr)
-# library(shinydashboard)
-# library(rhandsontable)
-# library(shinythemes)
-# #library(shinysky)
-# library(shinyjs)
 library(MMDIT)
-# library(shinyWidgets)
-# library(DT)
 
+# Need to set options for publishing to shinyapps.io
 #options(repos = BiocManager::repositories()) 
 
-#source("Ufunctions_updated_08122020.R")
+# MMDIT needs to be updaed to include continuous' updated functions instead
+# of sourcing part of if from "AllCodes5.R"
 source("AllCodes5.R")
-#source("C:/Users/snm0205/Desktop/MMDIT/R/RcppExports.R")
-#Rcpp::sourceCpp("C:/Users/snm0205/Desktop/MMDIT/src/graphline.cpp")
+
 
 
 shinyServer(function(input, output, session) {
@@ -39,6 +30,47 @@ shinyServer(function(input, output, session) {
       mydata_amps = NULL
       
     )
+    
+    # Homepage
+    ####### NEW ADDITIONS #####################################################
+    
+    showModal(modalDialog(
+      title = "Somewhat important message!",
+      "This app is for research use only. We collect your usage data within the MMDIT app to perform analytics of usage and improve our app. 
+      For details of policy please check ",tags$a("Google Privacy & Terms.",href="https://policies.google.com/privacy"),
+      easyClose = FALSE,
+      footer = tagList(div(style="display:inline-block;margin:0px 0px 0px 7px;",modalButton("Accept"))),
+    ))
+    
+    observeEvent(input$continuous_btn_ID, {
+      updateNavlistPanel(session, "tabs",
+                         selected = "continuous_analysis_method_ID")
+    })
+    
+    observeEvent(input$semi_continuous_btn_ID, {
+      updateNavlistPanel(session, "tabs",
+                         selected = "semi-continuous_analysis_method_ID")
+    })
+    
+    observeEvent(input$lets_begin_ID, {
+      updateNavlistPanel(session, "tabs",
+                         selected = "data_import_ID")
+    })
+    
+    observeEvent(input$user_guide_ID, {
+      updateNavlistPanel(session, "tabs",
+                         selected = "user_guide_tab_ID")
+    })
+    
+    output$samplepdf <- renderUI({tags$iframe(style = "height: 800px; width: 100%; scrolling=yes", src = "sample.pdf")})
+    
+    # tags$iframe(style="height:400px; width:100%; scrolling=yes", 
+    #             src="sample.pdf")
+    
+    
+    
+    #############################################################################
+    
     
     observeEvent(input$select_ss_data_ID,{
       values$x_ss_name<-input$select_ss_data_ID[['name']]
@@ -84,7 +116,6 @@ shinyServer(function(input, output, session) {
     )
     
     observe({
-      #if(is.null(values$x_ss_name) || is.null(values$y_mix_name)){
       if(is.null(values$y_mix_name)){
         shinyjs::disable("analyze_data_ID")
       }else{
@@ -93,9 +124,9 @@ shinyServer(function(input, output, session) {
     })
 
     all_bases <- c("","A","G","T","C","a","g","t","c")
+    
     observeEvent(input$analyze_data_ID,{
       values$x_ss_data <- NULL
-      #browser()
       if(!is.null(values$x_ss_datapath)){
         ###########################################################################################
         # Single source samples
@@ -109,7 +140,6 @@ shinyServer(function(input, output, session) {
           
           sample_alleles <- mydata_variant2snp %>% pull(Allele)
           
-          #browser()
           if(!all(sample_alleles %in% all_bases)){
             showModal(modalDialog(title = "Please check!",
                                   "There is a/ are heteroplasmic site[s] in known /
@@ -122,19 +152,14 @@ shinyServer(function(input, output, session) {
               UnfoldSNP(Pos, Allele, Type) %>%
               dplyr::mutate(FileID = values$x_ss_name[i],
                             Source = "Single")
-          #browser()
           values$x_ss_data <- bind_rows(values$x_ss_data,mydata_ss)
         }
         }
       ###########################################################################################
-      # get rcrs
-      #rcrs <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double = FALSE)
-      
-      # strings of knowns
-      #stringsKnowns <- function()
       
       
-      
+      ###########################################################################################
+      # Mixture sample
       mydata_mix_variant2snp <- empop2variant(values$y_mix_datapath) %>% 
           pull(Variant) %>%
           variant2snp() %>% 
@@ -143,6 +168,7 @@ shinyServer(function(input, output, session) {
       values$y_mix_data <- mydata_mix_variant2snp %$%
           UnfoldSNP(Pos, Allele, Type) %>%
           dplyr::mutate(FileID = values$y_mix_name, Source = "Mixture")
+      ###########################################################################################
     })
     
     output$empop_variant_input_snp <- rhandsontable::renderRHandsontable({
@@ -255,13 +281,13 @@ shinyServer(function(input, output, session) {
         })
     })
 
-    observe({
-      if((input$selected_tab_accordi_ID == "Select populations") && is.null(values[['mydata_db']])){
-        showModal(modalDialog(title = "Error!",
-                              tags$div(tags$b("Please load database first to populate this field!", style="color:red"))
-                              ))
-      }
-    })
+    # observe({
+    #   if((input$selected_tab_accordi_ID == "Select populations") && is.null(values[['mydata_db']])){
+    #     showModal(modalDialog(title = "Error!",
+    #                           tags$div(tags$b("Please load database first to populate this field!", style="color:red"))
+    #                           ))
+    #   }
+    # })
     
     observe({
       # TODO is tab 'Select populations' is selected and is.null(db) then alert to load db first. if(is.null())
@@ -350,6 +376,8 @@ shinyServer(function(input, output, session) {
     }
     })
     
+    #shinyjs::disable("done_run_backend_MMDIT_ID")
+    
     #observeEvent(input$done_cont_perc_kitID_id,{
     observeEvent(input$done_run_backend_MMDIT_ID,{
       #removeModal()
@@ -403,12 +431,30 @@ shinyServer(function(input, output, session) {
       # taking all the arguments - inclusion / exclusion list, and population 
       # generating Mitogenomes strings from database used as proxy for 
       # random mitochondrial sequences.
-      values[['population_selected']] <- input$myPicker_accor_ID
-      if("African" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("African")] <- "AF"
-      if("American" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("American")] <- "AM"
-      if("Asian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asian")] <- "AS"
-      if("European" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("European")] <- "EU"
-      if("Oceanian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceanian")] <- "OC"
+      #browser()
+      if(length(input$myPicker_accor_ID) >= 2){
+        #shinyjs::enable("done_run_backend_MMDIT_ID")
+        values[['population_selected']] <- input$myPicker_accor_ID
+        if("African" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("African")] <- "AF"
+        if("American" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("American")] <- "AM"
+        if("Asian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asian")] <- "AS"
+        if("European" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("European")] <- "EU"
+        if("Oceanian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceanian")] <- "OC"
+        
+      }else{
+        showModal(modalDialog(
+          title = "Error!",
+          div(tags$b(style="color: red;", "Please choose at least 2 populations!"))
+          
+          
+        ))
+      }
+      # values[['population_selected']] <- input$myPicker_accor_ID
+      # if("African" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("African")] <- "AF"
+      # if("American" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("American")] <- "AM"
+      # if("Asian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Asian")] <- "AS"
+      # if("European" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("European")] <- "EU"
+      # if("Oceanian" %in% values[['population_selected']]) values[['population_selected']][values[['population_selected']] %in% c("Oceanian")] <- "OC"
       # values[['genomes']] <- getMitoGenomes(values[['mydata_db']], 
       #                           pop = values[['population_selected']], 
       #                           blk = values[['data_excl_total_pkid']])
@@ -419,6 +465,8 @@ shinyServer(function(input, output, session) {
       print("Done getting mitochondrial genomes from the database")
       #browser()
       
+      # converting the final list of exclusion to tibble that is used to remove sites
+      # from input data
       mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
       
       # filter excluded sites from knowns (single source) data by anti-join
@@ -480,6 +528,8 @@ shinyServer(function(input, output, session) {
                                       mutate(Allele = if_else(Allele == '-', ' ', Allele))
       
       })
+      
+      # browser()
     })
     
     # # observe({
@@ -503,12 +553,22 @@ shinyServer(function(input, output, session) {
     #   # }
     #   # })
     #######################################################################
-    ## Semi-continuous method
+    ## Estimation of Match Statistics
     #######################################################################
+    
+    # function of generating string to be applied / map to each group of knowns
+    my_seqdiffs2seq <- function(x_data, y_key){
+      my_tmp_sd2s <- seqdiffs2seq(values[['rcrs']], x_data$Pos, x_data$evenType, x_data$Allele) %>%
+        as_tibble()
+      return(my_tmp_sd2s)
+      
+    }
+    
+    
     observeEvent(input$generate_mixture_statistics_ID,{
       withBusyIndicatorServer("generate_mixture_statistics_ID",{
-        #browser()
-        genomes_semiCont <- getMitoGenomes(values[['mydata_db']], 
+        
+        genomes_semiCont <- MMDIT::getMitoGenomes(values[['mydata_db']], 
                                                 pop = values[['population_selected']], 
                                                 blk = values[['data_excl_total_pkid']],
                                            ignoreIndels = FALSE)
@@ -518,14 +578,13 @@ shinyServer(function(input, output, session) {
         mygenomes <- MMDIT::preprocessMitoGenomes(genomes_semiCont)
         genomes <- mygenomes[[1]]
         genCount <- mygenomes[[2]]
+        values[['foo_genomes_semiCont']] <- genomes
         
-        # # The mito reference genome
-        # rcrs <- MMDIT::getMtgenomeSequence(values[['mydata_db']], double=FALSE)
         
         #####################################################################################################
         # TODO if no samples are known the following won't happen - DONE
         # adding integer event types
-        my_ss_2_hap_final <- c()
+        values[['my_ss_2_hap_final']] <- c()
         if(!is.null(values$x_ss_data)){
           
           my_ss_2_hap_W_sites_excl <- values[['ss_W_sites_excl']] %>% 
@@ -534,36 +593,16 @@ shinyServer(function(input, output, session) {
                                                    Type == "Deletion" ~ 1, 
                                                    Type == "Insertion" ~ 2))) 
           
-          # function of generating string to be applied / map to each group of knowns
-          my_seqdiffs2seq <- function(x_data, y_key){
-            my_tmp_sd2s <- seqdiffs2seq(values[['rcrs']], x_data$Pos, x_data$evenType, x_data$Allele) %>%
-              as_tibble()
-            return(my_tmp_sd2s)
-            
-          }
-          #browser()
-          # filter excluded sites from knowns data by anti-join
-          # mydata_excl_final_tib <- as_tibble_col(values[['data_excl_total_pkid']], column_name = "Pos")
-          # my_ss_2_hap_W_sites_excl <- anti_join(my_ss_2_hap,
-          #                                       mydata_excl_final_tib,
-          #                                       by = "Pos")
           
           # calculate seqdiffs2seq for each group, if more than one known present
-          my_ss_2_hap_final <- group_map(my_ss_2_hap_W_sites_excl, my_seqdiffs2seq) %>%
+          values[['my_ss_2_hap_final']] <- group_map(my_ss_2_hap_W_sites_excl, my_seqdiffs2seq) %>%
             unlist()
         }
-        # #####################################################################################################
-        # # getting the mixture calls processed from empop file
-        # my_mix_data <- bind_rows(values[['rhot_y_mix_data_indel']],values[['rhot_y_mix_data']]) %>%
-        #   mutate(Allele = if_else(Allele == '-', ' ', Allele))
-        # 
-        # # getting the mixture calls by converting hot to r object and binding
-        # my_mix_data <- bind_rows()
-        
-        # values[['my_mix_data']] <- values[['my_mix_data']] %>%
-        #   mutate(Allele = if_else(Allele == '-', ' ', Allele))
         
         #browser()
+        
+        nInMix_val <- case_when(input$select_mixture_type_ID == "2-persons mixture" ~ 2,
+                  input$select_mixture_type_ID == "3-persons mixture" ~ 3)
         
         # semi-continuous wrapper
         inter <- semicontinuousWrapper(genomes, 
@@ -572,10 +611,10 @@ shinyServer(function(input, output, session) {
                                        values[['my_mix_data_final']]$Start,
                                        values[['my_mix_data_final']]$Stop, 
                                        values[['my_mix_data_final']]$Allele,
-                                       knownHaps = my_ss_2_hap_final,
-                                       nInMix = 2)
+                                       knownHaps = values[['my_ss_2_hap_final']],
+                                       nInMix = nInMix_val)
         rmneStats <- inter[[1]]
-        lrStats <- inter[[2]]
+        lrStats <- inter[[2]] %>% arrange(pop)
         
         
           
@@ -595,36 +634,70 @@ shinyServer(function(input, output, session) {
       })
     
     #######################################################################
-    ## Continuous method
+    ## Mixture Deconvolution
     #######################################################################
     observe({
       if(is.null(input$select_var_excel_quantition_ID)) shinyjs::disable("genereate_cont_run_deploid") else shinyjs::enable("genereate_cont_run_deploid")
     })
     
+    
     observeEvent(input$select_var_excel_quantition_ID,{
       values[['altref_file']] <- input$select_var_excel_quantition_ID[['datapath']]
     })
+    
+    # Trace plot function showing convergence of MCMC steps
+    plot.llk <- function (dEploid.run, title = "", cex.lab = 1, cex.main = 1, cex.axis = 1 ){
+      llk = dEploid.run$llks
+      llkEvent = dEploid.run$llksStates
+      llk_sd = sd(llk)
+      llk_range = range(llk)
+      windowsFonts(A = windowsFont("Times New Roman"))
+      #plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
+      #     cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
+      plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
+           cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis, family="A", ylim=c(-2725,-2695) )
+      updateSingleAt = which(llkEvent == 1)
+      updateBothAt = which(llkEvent == 2)
+      updatePropAt = which(llkEvent == 0)
+      index = c(1:length(llk))
+      points(index[updateSingleAt], llk[updateSingleAt], cex = 0.6, col="red")
+      points(index[updateBothAt], llk[updateBothAt], cex = 0.6, col="blue")
+      points(index[updatePropAt], llk[updatePropAt], cex = 0.6, col="green")
+    }
+    
+    
     observeEvent(input$genereate_cont_run_deploid,{
-      browser()
+      #browser()
       # getting user inputs
       withBusyIndicatorServer("genereate_cont_run_deploid",{
       user_input_ED = as.integer(input$cont_edit_dist_input_ID)
       user_input_numMCMC = as.integer(input$cont_numMCMC_input_ID)
       user_input_panel_size = as.integer(input$cont_panel_size_input_ID)
       user_input_nInMix = input$cont_numPerson_inMix_input_ID
+      user_input_readCntNorm = as.integer(input$cont_readCount_norm_ID)
       user_input_recombRate = as.numeric(input$cont_recombRate_input_ID)
       user_input_miscopyingRate = as.numeric(input$cont_miscopying_rate_input_ID)
       
       #browser()
       
+      # check if panel size is atleast 15
+      if(user_input_panel_size <15){
+        showModal(modalDialog(title = "Error!",
+                              div(tags$b(style="color: red;", "Panel size should be atleast 15. Setting it to less than 
+                              15 might give erroneous results!
+                                         "))))
+      }
+      
       cont_mix_data <- values[['my_mix_data_final']] %>% select(-c(FileID,Source)) %>% filter(Type == "Substitution") %>%
         mutate(Pos=Stop)
-      altref <- Empop2AltRef(cont_mix_data, values[['altref_file']])
+      altref <- Empop2AltRef(cont_mix_data, values[['altref_file']], normVal = user_input_readCntNorm)
       #browser()
-      if(values$y_mix_name == "TheRealEMPOP_07908-034.txt"){
+      if(values$y_mix_name == "TheRealEMPOP_07908-034.txt" || values$y_mix_name == "TheRealEMPOP_025-07908.txt"){
         altref<-filter(altref, !is.na(NormalizedCount)) ##### not needed..if using JK's realempop
       }
-      mtGenomes_cont <- MMDIT::getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
+      mtGenomes_cont <- MMDIT::getMitoGenomes(values[['mydata_db']], pop = values[['population_selected']], 
+                                              blk = values[['data_excl_total_pkid']],
+                                              ignoreIndels = TRUE)
       allDiffs <- getSeqdiffs(values[['mydata_db']], pop = values[['population_selected']], ignoreIndels = TRUE)
       nearN <- getNeNe(mPos = altref$Pos, mAllele = altref$Allele, 
                     Count = altref$NormalizedCount, IsRef = altref$isRef, 
@@ -633,43 +706,26 @@ shinyServer(function(input, output, session) {
       nn<-nearN
       nn<-nn[1:user_input_panel_size] # reduce panel size while testing
       if(length(nn)<15)  {
-        stop("It's a no go cowboy, try decreasing the edit distance or choose another sample")
+        stop("This might give erroneous results, try increasing the panel size!")
       } 
       allDiffs[allDiffs$sampleid%in%nn,]%>%dplyr::select(-event)->longdf
       
+      #browser()
+      user_input_numMCMC=100
+      #set.seed(5) # all odd amplicons for 07908_034
+      set.seed(3)
       dEploid.run<-rundEploid(l=values[['data_excl_total_pkid']], mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef, 
                               SampleID = longdf$sampleid, rPos = longdf$position, rAllele =longdf$basecall, NumMCMC=user_input_numMCMC, exportPostProb =TRUE, 
                               recomb= user_input_recombRate, k= user_input_nInMix )
       
-      
-      #TODO: trace plot and getting hamming distance
-      plot.llk <- function (dEploid.run, title = "", cex.lab = 1, cex.main = 1, cex.axis = 1 ){
-        llk = dEploid.run$llks
-        llkEvent = dEploid.run$llksStates
-        llk_sd = sd(llk)
-        llk_range = range(llk)
-        plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="LLK", main=title,
-             cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
-        updateSingleAt = which(llkEvent == 1)
-        updateBothAt = which(llkEvent == 2)
-        updatePropAt = which(llkEvent == 0)
-        index = c(1:length(llk))
-        points(index[updateSingleAt], llk[updateSingleAt], cex = 0.6, col="red")
-        points(index[updateBothAt], llk[updateBothAt], cex = 0.6, col="blue")
-        points(index[updatePropAt], llk[updatePropAt], cex = 0.6, col="green")
-      }
-      
       plot.llk(dEploid.run)
-      dEploid.run
       
+      #TODO: trace plot (done) and getting hamming distance
       
-      
-      
-      
-      
-      
-      
-      
+      # Trace plot
+      output$cont_tace_plot_ID <- renderPlot(
+        plot.llk(dEploid.run)
+      )
       
       #run function to get mixture proportions from runDeploid object
       MixProp<-getMixProps(dEploid.run) %>%
@@ -679,13 +735,82 @@ shinyServer(function(input, output, session) {
         rhandsontable(MixProp)
       })
       
+      #print("getdeploid")
       #run function to get estimated haplotypes from runDeploid object
-      Haps<-getdEploidHaps(dEploid.run, mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef)
+      Haps<-getdEploidHaps(dEploid.run, mPos = altref$Pos, 
+                           mAllele = altref$Allele, 
+                           Count = altref$NormalizedCount, 
+                           IsRef = altref$isRef) %>%
+        mutate(Pos=as.integer(Pos))
+      print("donegetdeploid")
       output$cont_deploid_estimatedHap_rhotOut <- rhandsontable::renderRHandsontable({
-        rhandsontable(Haps %>% mutate(Pos=as.integer(Pos)), height = 500, width = 300)
+        rhandsontable(Haps, height = 500, width = 300)
       })
       print(user_input_numMCMC)
       print(user_input_panel_size)
+      
+      
+      ########################################################################
+      ##get hamming distance
+      ########################################################################
+      v1<-Empop2variant("C:\\Users\\snm0205\\Desktop\\UI_mitomix\\test_files\\RealData\\047_empop.txt")
+      v2<-Empop2variant("C:\\Users\\snm0205\\Desktop\\UI_mitomix\\test_files\\RealData\\025_empop.txt")
+      s1<-Variant2snp(v1$Variant)
+      s2<-Variant2snp(v2$Variant)
+      u1<-UnfoldSNP(s1$Pos, s1$Allele,s1$Type)%>%mutate(SampleID=1)%>%filter(Type!="Insertion" & Type!="Deletion")
+      u2<-UnfoldSNP(s2$Pos, s2$Allele,s2$Type)%>%mutate(SampleID=2)%>%filter(Type!="Insertion" & Type!="Deletion")
+      Truehaps<-bind_rows(u1, u2)%>%dplyr::select(SampleID , Pos)#
+      dplyr::filter(Truehaps, !Truehaps$Pos%in%dEploid.run$ExSites)->Truehaps1#remove sites that violate the infinite sites model
+      tSampleID<-Truehaps1$SampleID
+      tPos<-Truehaps1$Pos
+      HammingDist <- getHapDis(dSampleID = Haps$Samples,  dPos = Haps$Pos, tSampleID, tPos)
+      
+      
+      ##################
+      # RMP calculation
+      ##################
+      # update sites to be excluded
+      #print("exxluded sites")
+      deploid_exSites <- dEploid.run[['ExSites']]
+      updated_total_exSites <- unique(c(deploid_exSites, values[['data_excl_total_pkid']]))
+      updated_total_exSites_tib <- as_tibble_col(updated_total_exSites, column_name = "Pos")
+      #print("done getting excluded sites")
+      # exclude all the sites from estimated haplotypes from deploid
+      estHap_W_sites_excl <- anti_join(Haps, updated_total_exSites_tib, by="Pos")
+      #print("done antijoin")
+      # generate vector of strings from haplotypes
+      estHap_W_sites_excl_final <- estHap_W_sites_excl %>% 
+        group_by(Samples) %>% 
+        mutate(evenType = 0, Allele = Nuc) %>%
+        select(-c(Nuc))
+      #print("done getting final excl sites")
+      estHap_final <- group_map(estHap_W_sites_excl_final, my_seqdiffs2seq) %>%
+        unlist()
+    
+      # recalculate getMitoGenomes using the updated exclusion sites
+      genomes_cont_4EstHap <- MMDIT::getMitoGenomes(values[['mydata_db']],
+                                             pop = values[['population_selected']],
+                                             blk = updated_total_exSites, 
+                                             ignoreIndels = FALSE
+                                             )
+      
+      genomes_cont_4EstHap$sampleid <- as.character(genomes_cont_4EstHap$sampleid)
+      mygenomes_cont_4EstHap_1 <- MMDIT::preprocessMitoGenomes(genomes_cont_4EstHap)
+      genomes_cont <- mygenomes_cont_4EstHap_1[[1]]
+      
+      # rmp
+      estHap_rmp_database <- MMDIT::rmpWrapper(estHap_final, genomes = genomes_cont)
+      
+      
+      output$cont_rmp_rhot_ID <- rhandsontable::renderRHandsontable(
+        rhandsontable(estHap_rmp_database) %>% 
+          hot_col("RmpFrequentist", format = "0.00000") %>%
+          hot_col("RmpTheta", format = "0.00000") %>%
+          hot_col("Theta", format="0.00000")
+        
+      )
+      
+      
       })
     })
     
