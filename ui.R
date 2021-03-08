@@ -29,12 +29,13 @@ source("helpers.R") # Load all the code needed to show feedback on a button clic
 
 
 header <- dashboardHeader(
-  title = tags$a("MMDIT"), tags$li(class = "dropdown", tags$img(class= "hsc-logo",
-                                                                src='hsc_white.png',
-                                                                width = "50",
-                                                                height = "50",
-                                                                style = "margin-right: 20px;"
-                                                                ))
+  title = "MMDIT 1.0"#, 
+  # tags$li(class = "dropdown", tags$img(class= "hsc-logo",
+  #                                       src='hsc_white.png',
+  #                                       width = "50",
+  #                                       height = "50",
+  #                                       style = "margin-right: 20px;"
+  #                                       ))
                     )
                             
 
