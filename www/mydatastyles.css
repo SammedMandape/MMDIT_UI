@@ -1,0 +1,499 @@
+.skin-blue .main-header .navbar {
+    background-color: #253746;
+    border-bottom: 5px solid #7dba00;
+    
+}
+
+.skin-blue .main-header .logo {
+    background-color: #253746;
+    /*height: 60px;*/
+}
+
+.skin-blue .main-header .logo:hover {
+   background-color: #253746;
+}
+
+.skin-blue .main-header .navbar .sidebar-toggle {
+    display: none;
+
+}
+
+    
+.landing-wrapper .background-content img {
+    display: block;
+    width: auto;
+    height: auto;
+    margin-top: -10px;
+    margin-bottom: -30px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*.landing-wrapper .foreground-content {
+    position: absolute;
+    top: 5.0%;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}*/
+
+.landing-wrapper .landing-block {
+    width: 100%;
+    height:auto;
+}
+
+/*
+.landing-wrapper .foreground-content .foreground-text {
+    width: 40%;
+    padding: 5%;
+    color: black;
+     background-color: white; 
+    text-align: center;
+    /* box-shadow: 0 4px 6px 2px hsla(0, 0%, 0%, 0.18); */
+    /* opacity: 0.75; */
+}*/
+
+.samplediv {
+  width: 500px;
+  height: 500px;
+  background-color: powderblue;
+}
+
+#divInsteadbox{
+  
+  background-color: white;
+  border-style: dotted;
+  border:1px solid;
+  border-color:#009900; 
+}
+
+.well{
+  border:1px solid #e3e3e3;
+  margin-
+}
+
+.my-title{
+  background-color: black;
+}
+
+i.fab.fa-github {
+    padding-right: 6px !important;
+}
+
+.publication-details{
+  text-align:center;
+  margin-top: 3%;
+
+
+}
+
+.publication-details hr.line-break {
+  width: 50%;
+  border-top:2px solid #7dba00;
+  margin-top: -20px;
+  opacity:1.0;
+  
+}
+
+.line-break {
+  width: 30%;
+  border-top:1px solid gray;
+  opacity:0.3;
+  
+}
+
+.publication-details .paper-text {
+  padding-left: 10%;
+  padding-right: 10%;
+  text-align: center;
+}
+
+.publication-details .paper-header {
+  margin-top: 2%;
+  text-align:center;
+}
+
+
+#footers{
+	padding: 50px 0px 0px 0px;
+	bottom: 120px;
+    width: 100%; 
+    /* Height of the footer*/  
+    height: 40px; 
+}
+
+#footers footer.green-footer {
+    height: 100px;
+    background-color: #00778b;
+    
+}
+
+#footers .social-media-unthsc{
+	text-align: center;
+}
+
+#secondary-footer-docs{
+	text-align: center;
+	color: #ffffff;
+}
+
+.skin-blue .main-sidebar {
+  background-color:#253746;
+}
+
+
+.main-header .logo a {
+    color: white;
+}
+
+/*button#clear_ID:hover{
+  float: left;
+  width: auto; 
+  background-color: white;
+}*/
+
+
+/*** CSS FOR BUTTONS **/
+
+#clear_ID{
+  background-color: #00778b !important;
+  border-color: #00778b;
+  box-sizing:border-box;
+  width:auto;
+  color:white;
+}
+
+#clear_ID:hover{
+  background-color: #7dba00 !important;
+  border-color: #7dba00;
+  box-sizing:border-box;
+  width:auto;
+  color:black;
+}
+
+#analyze_data_ID{
+  background-color: #00778b !important;
+  border-color: #00778b;
+  box-sizing:border-box;
+  width:113px;
+  color:white;
+  
+}
+
+#analyze_data_ID:hover{
+  background-color:#7dba00 !important;
+  border-color: #7dba00;
+  box-sizing:border-box;
+  width:113px;
+  color:black;
+}
+
+
+#next_to_indel_analysis_ID{
+    background-color: #00778b !important;
+    float:left;
+    width:113px;
+    margin-top:20px;
+    margin-left:15px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+
+}
+
+#next_to_indel_analysis_ID:hover{
+    background-color: #7dba00 !important;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    float:left;
+    width:113px;
+    margin-top:20px;
+    margin-left:15px;
+    color: black;
+
+}
+
+
+#save_df_ID{
+    background-color: #00778b !important;
+    float:left;
+    width:113px;
+    margin-top:20px;
+    margin-left:15px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+
+}
+
+#save_df_ID:hover{
+    background-color: #7dba00 !important;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    float:left;
+    width:113px;
+    margin-top:20px;
+    margin-left:15px;
+    color: black;
+
+}
+
+#load_MMDIT_ID{
+    background-color: #00778b !important;
+    float:left;
+    width:auto;
+    
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#load_MMDIT_ID:hover{
+    background-color: #7dba00 !important;
+    float:left;
+    width:auto;
+    
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+
+#done_run_backend_MMDIT_ID{
+    background-color: #00778b !important;
+    float:right;
+    align-content:right;
+    width:auto;
+    /*margin-right:20px !important;*/
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#done_run_backend_MMDIT_ID:hover{
+    background-color: #7dba00 !important;
+    float:right;
+    align-content:right;
+    width:auto;
+    /*margin-right:20px !important;*/
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+#done_run_backend_MMDIT_ID>.btn-loading-container{
+  margin-right: -30%;
+  float: right;
+}
+
+#continuous_btn_ID{
+    background-color: #00778b !important;
+    width:auto;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#continuous_btn_ID:hover{
+    background-color: #7dba00 !important;
+    width:auto;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+#semi_continuous_btn_ID{
+    background-color: #00778b !important;
+    width:auto;
+    margin-left:20px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#semi_continuous_btn_ID:hover{
+    background-color: #7dba00 !important;
+    width:auto;
+    margin-left:20px;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+#download_data_ID{
+    background-color: #00778b !important;
+    width:130px;
+    float:right;
+    /*display:block;
+    margin-left:auto;
+    margin-right:auto;*/
+    margin-right:10%;
+    margin-top:10px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#download_data_ID:hover{
+    background-color: #7dba00 !important;
+    width:130px;
+    float:right;
+    /*margin-left:auto;
+    margin-right:auto;*/
+    margin-top:10px;
+    margin-right:10%;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+#user_guide_ID{
+    background-color: #00778b !important;
+    width:130px;
+    float:right;
+    margin-right:10%;
+    /*display:block;
+    margin-left:auto;
+    margin-right:auto;*/
+    margin-top:20px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#user_guide_ID:hover{
+    background-color: #7dba00 !important;
+    width:130px;
+    float:right;
+    margin-right:10%;
+   /* margin-left:auto;
+    margin-right:auto;*/
+    margin-top:20px;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+
+#lets_begin_ID{
+    background-color:#00778b !important;
+    color: white;
+    position:relative;
+    display: inline-block;
+    padding: 12px 12px;
+    width: 160px;
+    left: 32.5%;
+    font-size:18px;
+    box-shadow: 0 6px 6px 2px hsla(0, 0%, 0%, 0.18);
+}
+
+
+#lets_begin_ID:hover{
+    background-color:#7dba00 !important;
+    color: black;
+    position:relative;
+    display: inline-block;
+    padding: 12px 12px;
+    width: 160px;
+    left: 32.5%;
+    font-size:18px;
+    box-shadow: 0 6px 6px 2px hsla(0, 0%, 0%, 0.18);
+}
+
+#generate_mixture_statistics_ID {
+    background-color: #00778b !important;
+    width:auto;
+    margin-top:5px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#generate_mixture_statistics_ID:hover {
+    background-color: #7dba00 !important;
+    width:auto;
+    margin-top:5px;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+
+#genereate_cont_run_deploid {
+    background-color: #00778b !important;
+    width:auto;
+    margin-top:5px;
+    border-color: #00778b;
+    box-sizing:border-box;
+    color: white;
+  
+}
+
+
+#genereate_cont_run_deploid:hover {
+    background-color: #7dba00 !important;
+    width:auto;
+    margin-top:5px;
+    border-color: #7dba00;
+    box-sizing:border-box;
+    color: black;
+  
+}
+
+.skin-blue #sidebarItemExpanded{ 
+    border-top: 5px solid #7dba00;
+}
+
+.skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li:hover>a{
+  border-left: 6px solid #7dba00;
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
