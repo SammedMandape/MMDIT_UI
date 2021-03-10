@@ -283,6 +283,7 @@ shinyServer(function(input, output, session) {
       }
     })
     
+    
     getselect <- function(x){
       if(x == "Select all amplicons"){
         return(list(selected = c(1:162)))
@@ -297,12 +298,15 @@ shinyServer(function(input, output, session) {
         return('multiple')
       }
     }
+    
     output$mydata_amps_sel_dtID <- DT::renderDT({
       mydata_amps_sel <- values$mydata_amps
       },selection = getselect(input$Id081)
       )
+    
     output$mydata_amps_sel_textout_ID <- renderPrint({cat('Selected amplicons (row numbers):\n\n')
                                   input$mydata_amps_sel_dtID_rows_selected})
+    
     
     observe({
       if(input$Id072 == "Choose from Precision ID Kit" && is.null(values[['mydata_db']])){
@@ -310,7 +314,7 @@ shinyServer(function(input, output, session) {
                               div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
         ))
       }
-      if(input$Id072 == "Choose from Precision ID Kit" && (!is.null(values$mydata_db))){
+      if(input$Id072 == "Choose from Precision ID Kit" && (!is.null(values[['mydata_db']]))){
         showModal(modalDialog(
           title = "Precision kitID amplicon table (Please select amplicons to include)",
           DT::dataTableOutput("mydata_amps_sel_dtID"), 
@@ -333,6 +337,31 @@ shinyServer(function(input, output, session) {
           
           ))
       }
+    })
+    
+    observe({
+      if(input$Id072 == "Upload bed file of regions to include / exclude" && is.null(values[['mydata_db']])){
+        showModal(modalDialog(title = "Error!",
+                              div(tags$b("Invalid! Please load MMDIT database", style = "color: red;"))
+        ))
+      }
+      if(input$Id072 == "Upload bed file of regions to include / exclude" && (!is.null(values[['mydata_db']]))){
+        showModal(modalDialog(
+          title = "Please upload a bed file of regions to include",
+          fileInput("bed_file_incl_ID",
+                    label = "Upload bed file"),
+          footer = tagList(
+                    div(style="display:inline-block;",actionButton("cont_bed_file_incl_ID","Continue")),
+                    div(style="display:inline-block;margin:0px 0px 0px 7px;",modalButton("Dismiss"))
+            
+          )
+        ))
+        
+      }
+      
+      
+      
+      
     })
     
     
@@ -748,5 +777,15 @@ shinyServer(function(input, output, session) {
       })
     })
     
+    output$download_data_ID <- downloadHandler(
+      filename <- function() {
+        paste("SampleData", "zip", sep=".")
+      },
+      
+      content <- function(file) {
+        file.copy("SampleData.zip", file)
+      },
+      contentType = "application/zip"
+    )
 
 })
