@@ -29,7 +29,7 @@ source("helpers.R") # Load all the code needed to show feedback on a button clic
 
 
 header <- dashboardHeader(
-  title = "MMDIT 1.0"#, 
+  title = "MMDIT v1.0.0"#, 
   # tags$li(class = "dropdown", tags$img(class= "hsc-logo",
   #                                       src='hsc_white.png',
   #                                       width = "50",
@@ -47,7 +47,7 @@ sidebar <- dashboardSidebar(
     width = 250,
     sidebarMenu(id= "tabs",
         menuItem(text = "Home",icon = icon("home"), tabName = "home_tab_ID"),
-        menuItem(text = "Data import",icon = icon("file-import"), tabName = "data_import_ID"),
+        menuItem(text = "Data Import",icon = icon("file-import"), tabName = "data_import_ID"),
         menuItem(text = "Mixture Deconvolution",icon = icon("bars"), tabName = "continuous_analysis_method_ID"),
         menuItem(text = "Mixture Analysis", icon = icon("bars"), tabName = "semi-continuous_analysis_method_ID"),
         menuItem(text = "User guide", icon = icon("book"), tabName = "user_guide_tab_ID"),
@@ -95,17 +95,19 @@ body <- dashboardBody(
                                            Department of Justice. The opinions, findings, and conclusions or recommendations expressed 
                                            are those of the authors and do not necessarily reflect those of the U.S.  Department of Justice."), 
                                     tags$p("If you use this tool, please consider citing:"),
-                                    tags$li("Mandape et al: MMDIT paper"), tags$li("Smart, U.; Cihlar, J.C.;
-                                                                                    Mandape, S.N.; Muenzler, M.; King,
-                                                                                    J.L.; Budowle, B.;Woerner, A.E. A
-                                                                                    Continuous Statistical Phasing
-                                                                                    Framework for the Analysis of
-                                                                                    Forensic Mitochondrial DNA
-                                                                                    Mixtures. Genes 2021, 12, 128.
-                                                                                    https://doi.org/10.3390/
-                                                                                    genes12020128"), 
-                                    tags$li("Crysup, B.;Woerner, A.E; King, J.L; Budowle, B. Graph Algorithms for Mixture Interpretation. Genes 2021, 12, 185. https://doi.org/
-                                              10.3390/genes12020185")
+                                    tags$li("Mandape et al: MMDIT paper"), tags$li("U. Smart, J.C. Cihlar, 
+                                                                                   S.N. Mandape, M. Muenzler, 
+                                                                                   J.L. King, B. Budowle, A.E. Woerner, 
+                                                                                   A Continuous Statistical Phasing Framework 
+                                                                                   for the Analysis of Forensic Mitochondrial 
+                                                                                   DNA Mixtures, Genes. 12 (2021) 128. 
+                                                                                   https://doi.org/10.3390/genes12020128."), 
+                                    tags$li("	B. Crysup, A.E. Woerner, 
+                                            J.L. King, B. Budowle, 
+                                            Graph Algorithms for Mixture 
+                                            Interpretation, Genes. 12 (2021) 
+                                            185. 
+                                            https://doi.org/10.3390/genes12020185.")
                                     )),
                     fluidRow(
                       tags$hr(class="line-break"),

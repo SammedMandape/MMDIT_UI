@@ -62,7 +62,7 @@ shinyServer(function(input, output, session) {
                          selected = "user_guide_tab_ID")
     })
     
-    output$samplepdf <- renderUI({tags$iframe(style = "height: 800px; width: 100%; scrolling=yes", src = "sample.pdf")})
+    output$samplepdf <- renderUI({tags$iframe(style = "height: 800px; width: 100%; scrolling=yes", src = "UserGuide.pdf")})
     
     
     #############################################################################
@@ -623,14 +623,14 @@ shinyServer(function(input, output, session) {
       plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
           cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
       # plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
-      #      cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis, family="A", ylim=c(-2725,-2695) )
+      #       cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis, family="A", ylim=c(-2725,-2695), cex.lab=1.2) 
       updateSingleAt = which(llkEvent == 1)
       updateBothAt = which(llkEvent == 2)
       updatePropAt = which(llkEvent == 0)
       index = c(1:length(llk))
-      points(index[updateSingleAt], llk[updateSingleAt], cex = 0.6, col="red")
-      points(index[updateBothAt], llk[updateBothAt], cex = 0.6, col="blue")
-      points(index[updatePropAt], llk[updatePropAt], cex = 0.6, col="green")
+      # points(index[updateSingleAt], llk[updateSingleAt], cex = 0.6, col="red")
+      # points(index[updateBothAt], llk[updateBothAt], cex = 0.6, col="blue")
+      # points(index[updatePropAt], llk[updatePropAt], cex = 0.6, col="green")
     }
     
     
@@ -684,7 +684,7 @@ shinyServer(function(input, output, session) {
       
       dEploid.run<-rundEploid(l=values[['data_excl_total_pkid']], mPos = altref$Pos, mAllele = altref$Allele, Count = altref$NormalizedCount, IsRef = altref$isRef, 
                               SampleID = longdf$sampleid, rPos = longdf$position, rAllele =longdf$basecall, NumMCMC=user_input_numMCMC, exportPostProb =TRUE, 
-                              recomb= user_input_recombRate, k= user_input_nInMix )
+                              recomb= 0.0, k= user_input_nInMix )
       
       
       # Trace plot
