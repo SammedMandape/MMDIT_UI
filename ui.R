@@ -27,7 +27,6 @@ source("helpers.R") # Load all the code needed to show feedback on a button clic
 ## header
 ##################################################################################
 
-
 header <- dashboardHeader(
   title = "MMDIT v1.0.0"#, 
   # tags$li(class = "dropdown", tags$img(class= "hsc-logo",
@@ -68,6 +67,8 @@ body <- dashboardBody(
     tags$link(href="mydatastyles.css", rel="stylesheet", type="text/css")
   ),
   tags$head(includeHTML(("ggl_ana.html"))),
+  tags$html(class = "no-js", lang="en"), 
+  tags$h1("The main page of MMDIT", style="display:none"),
     tabItems(
       #########################################################################################################
       ## Home Tab
@@ -80,7 +81,7 @@ body <- dashboardBody(
                                     # child element 1: images
                                     tags$div(class="landing-block background-content",
                                              # images - top -> bottom, left -> right
-                                             tags$img(src="MMDIT.png"))),
+                                             tags$img(src="MMDIT.png", alt="Mitochondrial genome circos plot with"))),
                              
                             tags$div(style=("width:400px;margin:auto;"),       
                                              shiny::actionButton("lets_begin_ID","Begin Analysis"),
@@ -90,7 +91,7 @@ body <- dashboardBody(
                                     tags$p("Mitochondrial mixture database and interpretation tool (MMDIT) is an open-source, interactive software
                                     for the probabilistic genotyping of mitochondrial DNA mixtures based on complete mitochondrial genomes (mtGenomes). 
                                     MMDIT can perform both 'Mixture Deconvolution' and 'Mixture Analysis'. This tool is described in detail in the paper",
-                                           tags$a("MMDIT tool.",href="www.google.com"), "Funding: This work was supported by Award Number 
+                                           tags$a("MMDIT tool.",href="www.google.com", style="color: rgb(0,48,143);"), "Funding: This work was supported by Award Number 
                                            2017-DN-BX-0134 by the National Institute of Justice Office of Justice Programs, U.S. 
                                            Department of Justice. The opinions, findings, and conclusions or recommendations expressed 
                                            are those of the authors and do not necessarily reflect those of the U.S.  Department of Justice."), 
@@ -124,11 +125,11 @@ body <- dashboardBody(
                       width = 6, style = "border-left:1px solid gray",
                       tags$h3("Contact", style = "margin-left:10%"),
                       tags$div( style = "margin-left:10%",
-                      tags$p("For questions, comments or suggestions about the tool, please contact,"),
+                      tags$p("For questions, comments, suggestions or accessibility issues please contact:"),
                       tags$p(
                         tags$strong("Sammed Mandape"),
                         tags$br(), "Bioinformatician",
-                        tags$br(), tags$a(href = "mailto: sammed.mandape@unthsc.edu", "sammed.mandape@unthsc.edu")
+                        tags$br(), tags$a(href = "mailto: sammed.mandape@unthsc.edu", "sammed.mandape@unthsc.edu",style="color: rgb(0,48,143)")
                       ),
                       tags$p(
                         tags$strong("Center for Human Identification"),
@@ -140,21 +141,69 @@ body <- dashboardBody(
                     
                   ), ### fluidRow for columns end here
                                     
-                tags$div(id = "footers",
+                tags$div(id = "footers",#style="display:flex;flex-direction:row;position:relative;", #min-height
                   tags$footer(class ="green-footer",
-                    tags$a(
+                    fluidRow(column(width = 2, 
+                                    tags$a(
                       href = "https://www.unthsc.edu/graduate-school-of-biomedical-sciences/laboratory-faculty-and-staff/",
                       target = "_blank",
                       tags$img(
                         src = "UNTCHI_RDU.png",
                         width = "75",
                         height = "75",
-                        align = "left",
+                        #align = "left",
                         title = "UNTCHI R&D Unit",
-                        style = "margin: 10px 10px"
+                        style = "margin: 10px 10px",
+                        alt = "UNTCHI R & D logo and weblink to UNTCHI R & D unit"
                       )
-                    ), 
+                    )), 
                     
+                    column(width = 8, style="margin=auto",
+                    tags$div(class = "social-media-unthsc",
+                             
+                             tags$br(),
+                             
+                             tags$a(
+                               href ="https://twitter.com/UNTCHI_RDU",
+                               target = "_blank",
+                               tags$img(src = "twitter.png",
+                                        title = "UNTCHI RDU on Twitter",
+                                        width = "30",
+                                        height = "30",
+                                        class = "displayed",
+                                        style = "margin: 10px 10px",
+                                        alt = "Twitter logo and weblink to UNTHCI R&D unit's twitter account"
+                               )
+                             ),
+                             
+                             tags$a(
+                               href ="https://www.instagram.com/untchi_rdu/",
+                               target = "_blank",
+                               tags$img(src = "instagram.png",
+                                        title = "UNTCHI RDU on Instagram",
+                                        width = "30",
+                                        height = "30",
+                                        class = "displayed",
+                                        style = "margin: 10px 10px",
+                                        alt = "Instagram logo and weblink to UNTHCI R&D unit's instagram account"
+                               )
+                             ),
+                             
+                             tags$a(
+                               href = "https://www.facebook.com/UNTCenterForHumanIdentification",
+                               target = "_blank",
+                               tags$img(src = "facebook.png",
+                                        title = "UNTCHI RDU on Facebook",
+                                        width = "30",
+                                        height = "30",
+                                        class = "displayed",
+                                        style = "margin: 10px 10px",
+                                        alt = "Facebook logo and weblink to UNTHCI R&D unit's facebook account"
+                               )
+                             )
+                    )),
+                    
+                  column(width = 2,  
                    tags$a(
                       href = "https://www.untchi.org/",
                       target = "_blank",
@@ -162,53 +211,15 @@ body <- dashboardBody(
                         src = "CHI_2018.png",
                         width = "75",
                         height = "75",
-                        align = "right",
+                        #align = "right",
                         title = "Center for Human Identification Website",
-                        style = "margin: 10px 10px"
+                        style = "margin: 10px 10px; width=auto;display:inline;text-align=right;float:right",
+                        alt = "CHI logo and weblink to CHI"
                       )
-                    ),
+                    ))
                     
-                    tags$div(class = "social-media-unthsc",
-                      
-                      tags$br(),
-                      
-                      tags$a(
-                        href ="https://twitter.com/UNTCHI_RDU",
-                        target = "_blank",
-                        tags$img(src = "twitter.png",
-                                 title = "UNTCHI RDU on Twitter",
-                                 width = "30",
-                                 height = "30",
-                                 class = "displayed",
-                                 style = "margin: 10px 10px"
-                        )
-                      ),
-                      
-                      tags$a(
-                        href ="https://www.instagram.com/untchi_rdu/",
-                        target = "_blank",
-                        tags$img(src = "instagram.png",
-                                 title = "UNTCHI RDU on Instagram",
-                                 width = "30",
-                                 height = "30",
-                                 class = "displayed",
-                                 style = "margin: 10px 10px"
-                        )
-                      ),
-                      
-                      tags$a(
-                        href = "https://www.facebook.com/UNTCenterForHumanIdentification",
-                        target = "_blank",
-                        tags$img(src = "facebook.png",
-                                 title = "UNTCHI RDU on Facebook",
-                                 width = "30",
-                                 height = "30",
-                                 class = "displayed",
-                                 style = "margin: 10px 10px"
-                        )
-                      )
-                    )
-                  ),
+                    
+                  )),
                   
                   ##############################################
                   #Apply secondary footer    
@@ -236,14 +247,16 @@ body <- dashboardBody(
         tabItem(tabName = "data_import_ID",
                 fluidRow(
                     box(title = tags$b("STEP 1 : File Import"), width = 12, height = "auto",
-                        column(width = 6,
+                        column(width = 6,tags$label(
                                fileInput("select_ss_data_ID",
                                          label = "Upload one or more single source data",
                                          multiple = TRUE,
-                                         accept = "text/plain"),
+                                         accept = "text/plain",
+                                         placeholder = "No file selected")),
+                               tags$label(
                                fileInput("select_mix_data_ID",
                                          label = "Upload mixture data *",
-                                         accept = "text/plain"),
+                                         accept = "text/plain")),
                                #fluidRow 
                                 tags$div(
                                actionButton("clear_ID", label = "Clear selection",class="btn-info"),
@@ -320,12 +333,13 @@ body <- dashboardBody(
                                                                            "Finalize list", style="margin-top:0px;margin-right:20px;")))
                                       
                                     ),
-                                   fluidRow(box(title = "Choose Inclusion/Exclusion list", status = "warning",
+                                   fluidRow(box(title = "Inclusion/Exclusion list", status = "warning",
                                         div(style = "text-align: left;",
-                                            radioGroupButtons(
+                                            tags$label(radioGroupButtons(
                                               inputId = "Id072",
-                                              label = "",
-                                              choices = c("Choose one option to input inclusion / exclusion list",
+                                              label = "Choose one option to input inclusion / exclusion list",
+                                              selected = NULL,
+                                              choices = c("None selected",
                                                           "Choose from Precision ID Kit",
                                                           "Upload bed file of regions to include / exclude"),
                                               checkIcon = list(
@@ -334,13 +348,14 @@ body <- dashboardBody(
                                                 no = tags$i(class = "fa fa-square-o", 
                                                             style = "color: steelblue")),
                                               direction = "vertical",
+                                              
                                               justified = TRUE
-                                            ))
+                                            )))
                                         ),
-                                        box(title = "Select populations", status = "warning",
+                                        box(title = "Populations", status = "warning",
                                             pickerInput(
                                               inputId = "myPicker_accor_ID", 
-                                              label = "", 
+                                              label = "Select two or more populations", 
                                               choices = "", 
                                               options = list(
                                                 `actions-box` = TRUE, 
@@ -351,7 +366,7 @@ body <- dashboardBody(
                                             ) %>% 
                                               bsplus::shinyInput_label_embed(
                                                 shiny::icon("info-circle") %>%
-                                                  bs_embed_tooltip("Choose at least 2 populations. All populations
+                                                  bs_embed_tooltip("All populations
                                                                    are selected by default.")
                                               )
                                             
@@ -385,12 +400,12 @@ body <- dashboardBody(
                 fluidRow(
                   box(title = tags$b("Mixture Analysis"), width = 12, height = "auto",
                     column(
-                    selectInput(
+                    tags$label(selectInput(
                       "select_mixture_type_ID",
                       label = "Enter the number of contributors in mixture",
                       choices = c('2-persons mixture', '3-persons mixture' 
                       )
-                    ),
+                    )),
                     width = 6
                   ),
                   tags$br(),
@@ -424,11 +439,11 @@ body <- dashboardBody(
                 fluidRow(
                   box(title = tags$b("Mixture Deconvolution"), width = 12, height = "auto",
                       fluidRow(
-                        column(width = 6,
+                        column(width = 6,tags$label(
                               fileInput("select_var_excel_quantition_ID",
                                label = "Upload excel file with quantitative data",
                                accept = ".xlsx"
-                               ))),
+                               )))),
                       fluidRow(
                         column(width = 3,
                                textInput("cont_edit_dist_input_ID", "Graph edit distance (GED)", value = 4)),
@@ -450,6 +465,12 @@ body <- dashboardBody(
                       )
                 ),
                 fluidRow(
+   #                tags$style(HTML("
+   #   .tabbable > .nav > li > a                  {color:#333333}
+   #   .tabbable > .nav > li[class=active] > a {background-color: #253746; color:#fff}
+   #   .tabbable > .nav > li > a:hover {background-color: #84bd00; color:#333}
+   #   /*.tabbable > .nav > li > a[data-value='Trace plot'] {background-color: #84bd00; color:#333}*/
+   # ")),
                   box(title = tags$b("RESULTS"), width = 12, height = "auto",
                       tabsetPanel(id="cont_results_box_ID",
                                   tabPanel("Statistics",
@@ -467,7 +488,11 @@ body <- dashboardBody(
                                            
                                            
                                   ),
-                                  tabPanel("Trace plot",
+  #                                 tags$style(HTML("
+  #   .tabbable > .nav > li > a                  {background-color: aqua;  color:black}
+  #   .tabbable > .nav > li[class=active]    > a {background-color: black; color:white}
+  # ")),
+                                  tabPanel("Trace plot", style=".tabbable > .nav > li > a {background-color: aqua;  color:black}",
                                            plotOutput("cont_tace_plot_ID")
                                            ),
                                   tabPanel("Calculate Random Match Probability",

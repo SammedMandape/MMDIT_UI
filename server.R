@@ -17,7 +17,6 @@ library(MMDIT)
 source("AllCodes5.R")
 
 
-
 shinyServer(function(input, output, session) {
   
     values <- reactiveValues(
@@ -62,7 +61,7 @@ shinyServer(function(input, output, session) {
                          selected = "user_guide_tab_ID")
     })
     
-    output$samplepdf <- renderUI({tags$iframe(style = "height: 800px; width: 100%; scrolling=yes", src = "UserGuide.pdf")})
+    output$samplepdf <- renderUI({tags$iframe(`title`="UserGuide",style = "height: 800px; width: 100%; scrolling=yes", src = "UserGuide.pdf", lang="en")})
     
     
     #############################################################################

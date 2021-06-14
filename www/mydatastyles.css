@@ -1,6 +1,6 @@
 .skin-blue .main-header .navbar {
     background-color: #253746;
-    border-bottom: 5px solid #7dba00;
+    border-bottom: 5px solid #84bd00;
     
 }
 
@@ -90,7 +90,7 @@ i.fab.fa-github {
 
 .publication-details hr.line-break {
   width: 50%;
-  border-top:2px solid #7dba00;
+  border-top:2px solid #84bd00;
   margin-top: -20px;
   opacity:1.0;
   
@@ -165,8 +165,8 @@ i.fab.fa-github {
 }
 
 #clear_ID:hover{
-  background-color: #7dba00 !important;
-  border-color: #7dba00;
+  background-color: #84bd00 !important;
+  border-color: #84bd00;
   box-sizing:border-box;
   width:auto;
   color:black;
@@ -182,8 +182,8 @@ i.fab.fa-github {
 }
 
 #analyze_data_ID:hover{
-  background-color:#7dba00 !important;
-  border-color: #7dba00;
+  background-color:#84bd00 !important;
+  border-color: #84bd00;
   box-sizing:border-box;
   width:113px;
   color:black;
@@ -203,8 +203,8 @@ i.fab.fa-github {
 }
 
 #next_to_indel_analysis_ID:hover{
-    background-color: #7dba00 !important;
-    border-color: #7dba00;
+    background-color: #84bd00 !important;
+    border-color: #84bd00;
     box-sizing:border-box;
     float:left;
     width:113px;
@@ -228,8 +228,8 @@ i.fab.fa-github {
 }
 
 #save_df_ID:hover{
-    background-color: #7dba00 !important;
-    border-color: #7dba00;
+    background-color: #84bd00 !important;
+    border-color: #84bd00;
     box-sizing:border-box;
     float:left;
     width:113px;
@@ -252,11 +252,11 @@ i.fab.fa-github {
 
 
 #load_MMDIT_ID:hover{
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     float:left;
     width:auto;
     
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -277,12 +277,12 @@ i.fab.fa-github {
 
 
 #done_run_backend_MMDIT_ID:hover{
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     float:right;
     align-content:right;
     width:auto;
     /*margin-right:20px !important;*/
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -304,9 +304,9 @@ i.fab.fa-github {
 
 
 #continuous_btn_ID:hover{
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     width:auto;
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -324,10 +324,10 @@ i.fab.fa-github {
 
 
 #semi_continuous_btn_ID:hover{
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     width:auto;
     margin-left:20px;
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -350,14 +350,14 @@ i.fab.fa-github {
 
 
 #download_data_ID:hover{
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     width:130px;
     float:right;
     /*margin-left:auto;
     margin-right:auto;*/
     margin-top:10px;
     margin-right:10%;
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -380,14 +380,14 @@ i.fab.fa-github {
 
 
 #user_guide_ID:hover{
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     width:130px;
     float:right;
     margin-right:10%;
    /* margin-left:auto;
     margin-right:auto;*/
     margin-top:20px;
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -408,7 +408,7 @@ i.fab.fa-github {
 
 
 #lets_begin_ID:hover{
-    background-color:#7dba00 !important;
+    background-color:#84bd00 !important;
     color: black;
     position:relative;
     display: inline-block;
@@ -431,10 +431,10 @@ i.fab.fa-github {
 
 
 #generate_mixture_statistics_ID:hover {
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     width:auto;
     margin-top:5px;
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
@@ -453,47 +453,40 @@ i.fab.fa-github {
 
 
 #genereate_cont_run_deploid:hover {
-    background-color: #7dba00 !important;
+    background-color: #84bd00 !important;
     width:auto;
     margin-top:5px;
-    border-color: #7dba00;
+    border-color: #84bd00;
     box-sizing:border-box;
     color: black;
   
 }
 
 .skin-blue #sidebarItemExpanded{ 
-    border-top: 5px solid #7dba00;
+    border-top: 5px solid #84bd00;
 }
 
 .skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li:hover>a{
-  border-left: 6px solid #7dba00;
+  border-left: 6px solid #84bd00;
   
 }
 
 
+.tabbable > .nav > li > a{
+	color:#333333
+	}
 
+.tabbable > .nav > li[class=active] > a {
+	background-color: #253746;
+	color:#fff
+	}
+	
+.tabbable > .nav > li > a:hover {
+	background-color: #84bd00;
+	color:#333
+	}
+/*.tabbable > .nav > li > a[data-value='Trace plot'] {background-color: #84bd00; color:#333}*/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.bootstrap-select>.dropdown-toggle.bs-placeholder, .bootstrap-select>.dropdown-toggle.bs-placeholder:active, .bootstrap-select>.dropdown-toggle.bs-placeholder:focus, .bootstrap-select>.dropdown-toggle.bs-placeholder:hover{
+color: black}
+	
