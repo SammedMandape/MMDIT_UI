@@ -1,3 +1,8 @@
+# @Author: Sammed N Mandape
+# Title: Bioinformatician
+# Email: sammed.mandape@unthsc.edu
+# Center for Human Identification
+# University of North Texas Health Science Center, Fort Worth, TX, USA
 #
 # This is the server logic of a Shiny web application. You can run the
 # application by clicking 'Run App' above.

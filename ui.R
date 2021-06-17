@@ -1,4 +1,9 @@
-#
+# @Author: Sammed N Mandape
+# Title: Bioinformatician
+# Email: sammed.mandape@unthsc.edu
+# Center for Human Identification
+# University of North Texas Health Science Center, Fort Worth, TX, USA
+# 
 # This is the user-interface definition of a Shiny web application. You can
 # run the application by clicking 'Run App' above.
 #
@@ -151,7 +156,7 @@ body <- dashboardBody(
                         src = "UNTCHI_RDU.png",
                         width = "75",
                         height = "75",
-                        #align = "left",
+                        #align = "left", # WCAG 2.1 AA issue
                         title = "UNTCHI R&D Unit",
                         style = "margin: 10px 10px",
                         alt = "UNTCHI R & D logo and weblink to UNTCHI R & D unit"
@@ -211,7 +216,7 @@ body <- dashboardBody(
                         src = "CHI_2018.png",
                         width = "75",
                         height = "75",
-                        #align = "right",
+                        #align = "right", # WCAG 2.1 AA issue
                         title = "Center for Human Identification Website",
                         style = "margin: 10px 10px; width=auto;display:inline;text-align=right;float:right",
                         alt = "CHI logo and weblink to CHI"
@@ -465,12 +470,6 @@ body <- dashboardBody(
                       )
                 ),
                 fluidRow(
-   #                tags$style(HTML("
-   #   .tabbable > .nav > li > a                  {color:#333333}
-   #   .tabbable > .nav > li[class=active] > a {background-color: #253746; color:#fff}
-   #   .tabbable > .nav > li > a:hover {background-color: #84bd00; color:#333}
-   #   /*.tabbable > .nav > li > a[data-value='Trace plot'] {background-color: #84bd00; color:#333}*/
-   # ")),
                   box(title = tags$b("RESULTS"), width = 12, height = "auto",
                       tabsetPanel(id="cont_results_box_ID",
                                   tabPanel("Statistics",
@@ -488,10 +487,6 @@ body <- dashboardBody(
                                            
                                            
                                   ),
-  #                                 tags$style(HTML("
-  #   .tabbable > .nav > li > a                  {background-color: aqua;  color:black}
-  #   .tabbable > .nav > li[class=active]    > a {background-color: black; color:white}
-  # ")),
                                   tabPanel("Trace plot", style=".tabbable > .nav > li > a {background-color: aqua;  color:black}",
                                            plotOutput("cont_tace_plot_ID")
                                            ),
