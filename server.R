@@ -623,7 +623,7 @@ shinyServer(function(input, output, session) {
       llkEvent = dEploid.run$llksStates
       llk_sd = sd(llk)
       llk_range = range(llk)
-      windowsFonts(A = windowsFont("Times New Roman"))
+      #windowsFonts(A = windowsFont("Times New Roman"))
       plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,
           cex.lab = cex.lab, cex.main = cex.main, cex.axis = cex.axis)
       # plot(llk, lty=2, type="l", col="black", xlab="Iteration", ylab="Log-likelihood", main=title,

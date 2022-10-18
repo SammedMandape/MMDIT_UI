@@ -33,7 +33,8 @@ source("helpers.R") # Load all the code needed to show feedback on a button clic
 ##################################################################################
 
 header <- dashboardHeader(
-  title = "MMDIT v1.0.0"#, 
+  title = "MMDIT v1.0.0"#,tags$head(tags$link(rel="shortcut icon", href="favicon.ico"))
+  
   # tags$li(class = "dropdown", tags$img(class= "hsc-logo",
   #                                       src='hsc_white.png',
   #                                       width = "50",
@@ -68,6 +69,7 @@ sidebar <- dashboardSidebar(
 ##################################################################################   
 body <- dashboardBody(
   useShinyjs(),
+  #tags$head(),
   tags$head(
     tags$link(href="mydatastyles.css", rel="stylesheet", type="text/css")
   ),
@@ -93,23 +95,25 @@ body <- dashboardBody(
                                      ),
                             tags$div(class="publication-details",
                                     tags$div(class="paper-text", 
-                                    tags$p("Mitochondrial mixture database and interpretation tool (MMDIT) is an open-source, interactive software
+                                    tags$p("Mitochondrial mixture database and 
+                                    interpretation tool (MMDIT) is an open-source, interactive software
                                     for the probabilistic genotyping of mitochondrial DNA mixtures based on complete mitochondrial genomes (mtGenomes). 
                                     MMDIT can perform both 'Mixture Deconvolution' and 'Mixture Analysis'. This tool is described in detail in the paper",
                                            tags$a("MMDIT tool.",href="www.google.com", style="color: rgb(0,48,143);"), "Funding: This work was supported by Award Number 
                                            2017-DN-BX-0134 by the National Institute of Justice Office of Justice Programs, U.S. 
                                            Department of Justice. The opinions, findings, and conclusions or recommendations expressed 
-                                           are those of the authors and do not necessarily reflect those of the U.S.  Department of Justice."), 
+                                           are those of the authors and do not necessarily reflect those of the U.S.  Department of Justice."),
+                                    tags$p("*Circos plot was generated using the code at https://github.com/k8hertweck/mt_genome_viz"),
                                     tags$p("If you use this tool, please consider citing:"),
-                                    tags$li("Mandape et al: MMDIT paper"), tags$li("U. Smart, J.C. Cihlar, 
-                                                                                   S.N. Mandape, M. Muenzler, 
-                                                                                   J.L. King, B. Budowle, A.E. Woerner, 
-                                                                                   A Continuous Statistical Phasing Framework 
-                                                                                   for the Analysis of Forensic Mitochondrial 
-                                                                                   DNA Mixtures, Genes. 12 (2021) 128. 
-                                                                                   https://doi.org/10.3390/genes12020128."), 
-                                    tags$li("	B. Crysup, A.E. Woerner, 
-                                            J.L. King, B. Budowle, 
+                                    tags$li("Mandape et al (Submitted): MMDIT: 
+                                    A tool for the deconvolution and 
+                                    interpretation of mitochondrial DNA 
+                                    mixtures"), tags$li("Smart et al., 2021. 
+                                     A Continuous Statistical Phasing Framework 
+                                     for the Analysis of Forensic Mitochondrial 
+                                     DNA Mixtures, Genes. 12 (2021) 128. 
+                                     https://doi.org/10.3390/genes12020128."), 
+                                    tags$li("	Crysup et al., 2021. 
                                             Graph Algorithms for Mixture 
                                             Interpretation, Genes. 12 (2021) 
                                             185. 
@@ -284,7 +288,7 @@ body <- dashboardBody(
                     box(title = tags$b("STEP 2 : Preprocessing"), width = 12, height = "auto",
                         column(width = 6,
                         tags$div(actionButton(
-                          "analyze_data_ID", label = "Analyze data",
+                          "analyze_data_ID", label = "Analyze data"
                         ),
                       
                         )

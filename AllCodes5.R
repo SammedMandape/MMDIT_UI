@@ -821,11 +821,11 @@ UnfoldSNP<-function(Pos, Allele, Type){
                                    Allele,
                                    DecodAllele),
                   DecodAllele=NULL) %>%
-    dplyr::mutate(Allele=ifelse(Type=="Deletion" & Allele=="","-",Allele),
+    dplyr::mutate(Allele=ifelse(Type=="Deletion" & Allele=="","",Allele),
                   Pos=as.integer(Pos))
   rbind(mytib, mytib %>%
           filter(grepl("[acgtryswkmbdhvn]+", Allele)) %>% 
-          dplyr::mutate(Allele ="-")) %>% 
+          dplyr::mutate(Allele ="")) %>% 
     dplyr::mutate(Allele=str_to_upper(Allele)) %>%
     dplyr::arrange(Pos) -> myfinaldata  
   
